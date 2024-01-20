@@ -42,6 +42,16 @@ export default function Home() {
       </div>
       <div className="bg-beige-50 w-full flex flex-col flex-grow items-center min-h-[800px] p-8 shadow-lg rounded-xl">
         <p className="caption">AGGREGATED FROM</p>
+
+        <div className="flex flex-col w-full items-start">
+          <div>
+            <h2> Explore races </h2>
+            Lalalala
+          </div>
+
+          <h2> Learn about candidates </h2>
+          <h2> Ask questions </h2>
+        </div>
       </div>
     </main>
   );

@@ -11,11 +11,11 @@ h1 {
 }
 
 h2 {
-  @apply text-6xl;
+  @apply text-4xl;
 }
 
 h3 {
-  @apply text-4xl;
+  @apply text-3xl;
 }
 
 h4 {
