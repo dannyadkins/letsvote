@@ -6,8 +6,38 @@ body {
   @apply bg-beige-100;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+h1 {
+  @apply text-8xl;
+}
+
+h2 {
+  @apply text-6xl;
+}
+
+h3 {
+  @apply text-4xl;
+}
+
+h4 {
+  @apply text-2xl;
+}
+
+h5 {
+  @apply text-xl;
+}
+
+h6 {
+  @apply text-lg;
+}
+
+p {
+  font-family: "Inter", sans-serif;
+}
+
+.caption {
+  @apply text-sm;
+  @apply text-neutral-400;
+  /* make bold */
+  @apply font-semibold;
+  @apply uppercase;
 }
