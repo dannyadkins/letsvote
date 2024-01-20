@@ -7,12 +7,16 @@ export function Header() {
 
   const links = [
     {
-      name: "Home",
-      href: "/",
-    },
-    {
       name: "Candidates",
       href: "/candidates",
+    },
+    {
+      name: "Races",
+      href: "/races",
+    },
+    {
+      name: "Voting",
+      href: "/voting",
     },
   ];
 
