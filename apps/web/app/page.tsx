@@ -1,6 +1,7 @@
 import { MotionDivWrapper } from "@/components/core/ClientMotion";
 import { Input } from "@/components/atoms/Input";
 import Image from "next/image";
+import { SearchBar } from "./SearchBar";
 
 export default function Home() {
   return (
@@ -37,11 +38,7 @@ export default function Home() {
             Learn about how you can vote and what the candidates are saying.
           </p>
         </MotionDivWrapper>
-        <Input
-          type="text"
-          placeholder="Enter a search"
-          className="max-w-[500px]"
-        />
+        <SearchBar />
       </div>
       <div className="bg-beige-50 w-full flex flex-col flex-grow items-center min-h-[800px] p-8 shadow-lg rounded-xl">
         <p className="caption">AGGREGATED FROM</p>

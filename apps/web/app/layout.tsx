@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import classNames from "classnames";
-import { Header } from "@/components/organisms/Header";
+import { Header } from "@/app/Header";
 
 export const metadata: Metadata = {
   title: "Let's Vote",
