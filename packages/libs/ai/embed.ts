@@ -1,7 +1,7 @@
 export async function getEmbedding(
   inputText: string,
   model = "text-embedding-ada-002"
-) {
+): Promise<number[] | undefined> {
   const url = "https://api.openai.com/v1/embeddings";
   const options = {
     method: "POST",
