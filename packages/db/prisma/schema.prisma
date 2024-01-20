@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Document {
+  id             Int      @id @default(autoincrement())
+  sourceUrl      String
+  datePublished  DateTime? 
+  dateCrawled    DateTime @default(now())
+  title          String
+  topics         String[]
+  chunks         Chunk[]
+}
+
+model Chunk {
+  id          Int      @id @default(autoincrement())
+  documentId  Int
+  index       Int
+  embedding   Unsupported("vector(1536)")?
+  Document    Document @relation(fields: [documentId], references: [id])
+  contentParsed     String
+  contentRaw        String
+}
+
