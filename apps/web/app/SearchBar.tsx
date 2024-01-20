@@ -19,7 +19,7 @@ export const SearchBar = ({ className, ...props }: any) => {
 
   const handleFocus = () => setIsFocused(true);
   const handleBlur = () => setIsFocused(false);
-  const handleChange = (event) => setInputValue(event.target.value);
+  const handleChange = (event: any) => setInputValue(event.target.value);
 
   return (
     <div>
