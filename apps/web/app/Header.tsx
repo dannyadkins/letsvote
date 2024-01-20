@@ -20,7 +20,7 @@ export function Header() {
 
   const handleScroll = () => {
     const offset = window.scrollY;
-    if (offset > 300) {
+    if (offset > 200) {
       setScrolled(true);
     } else {
       setScrolled(false);
