@@ -1,0 +1,16 @@
+{
+  "name": "ingest2",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.8.1",
+    "twitter-api-sdk": "^1.2.1",
+    "tsconfig": "*"
+  },
+  "type": "module"
+}
