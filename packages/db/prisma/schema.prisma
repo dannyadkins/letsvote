@@ -26,4 +26,3 @@ model Chunk {
   contentParsed     String
   contentRaw        String
 }
-

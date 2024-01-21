@@ -1,0 +1,9 @@
+{
+  "name": "ingest",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

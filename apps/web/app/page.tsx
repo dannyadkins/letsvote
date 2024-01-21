@@ -1,14 +1,15 @@
 import { MotionDivWrapper } from "@/components/core/ClientMotion";
 import { Input } from "@/components/atoms/Input";
 import Image from "next/image";
-import { SearchBar } from "./SearchBar";
+import { SearchBar } from "../components/organisms/SearchBar";
+import { ArrowLink } from "@/components/atoms/ArrowLink";
 
 export default function Home() {
   return (
     <main className="w-full flex flex-col items-center flex-grow p-8">
       <MotionDivWrapper
-        initial={{ opacity: 0, y: 100, marginTop: 100 }}
-        animate={{ opacity: 0.25, y: 0, marginTop: 0 }}
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 0.25, y: 0 }}
         transition={{ duration: 1 }}
         className="absolute -z-50"
       >
@@ -26,7 +27,7 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
         >
-          <h1>Hi there.</h1>
+          <h1>Let's Vote.</h1>
           {/* TODO, give an example of a search if they don't do anything with typing animation */}
         </MotionDivWrapper>
         <MotionDivWrapper
@@ -45,7 +46,9 @@ export default function Home() {
 
         <div className="flex flex-col w-full items-start">
           <div>
-            <h2> Explore races </h2>
+            <ArrowLink href="/races">
+              <h2> Explore races </h2>
+            </ArrowLink>
             Lalalala
           </div>
 
