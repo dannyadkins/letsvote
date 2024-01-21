@@ -9,8 +9,6 @@
   },
   "dependencies": {
     "@prisma/client": "^5.8.1",
-    "twitter-api-sdk": "^1.2.1",
-    "tsconfig": "*"
-  },
-  "type": "module"
+    "twitter-api-sdk": "^1.2.1"
+  }
 }

@@ -12,6 +12,9 @@ export class TwitterScraperClient {
 
     // topic is something like Nikki Haley
 
+    if (!process.env.TWITTER_BEARER_TOKEN) {
+      throw new Error("TWITTER_BEARER_TOKEN is not set");
+    }
     this.twitterClient = new Client(process.env.TWITTER_BEARER_TOKEN);
   }
 
