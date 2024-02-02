@@ -7,25 +7,29 @@ import { ArrowLink } from "@/components/atoms/ArrowLink";
 export default function Home() {
   return (
     <main className="w-full flex flex-col items-center flex-grow p-8">
-      <MotionDivWrapper
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 0.25, y: 0 }}
-        transition={{ duration: 1 }}
-        className="absolute -z-50"
-      >
-        <Image
-          src="/globe_outline_transparent.png"
-          alt="Globe Outline"
-          layout="responsive"
-          width={800}
-          height={600}
-        />
-      </MotionDivWrapper>
+      {/* TODO: Fix up this styling, in here temporarily to prevent layout shift with SSR+anim */}
+      <div className="h-[100vh] absolute -z-50">
+        <MotionDivWrapper
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 0.25, y: 0 }}
+          transition={{ duration: 1 }}
+          className=" h-[600px]"
+        >
+          <Image
+            src="/globe_outline_transparent.png"
+            alt="Globe Outline"
+            layout="responsive"
+            width={800}
+            height={600}
+          />
+        </MotionDivWrapper>
+      </div>
       <div className="w-full flex flex-col items-center justify-center h-[50vh] gap-4">
         <MotionDivWrapper
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
+          className="h-[80px]"
         >
           <h1>Let's Vote.</h1>
           {/* TODO, give an example of a search if they don't do anything with typing animation */}

@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={classNames(inter.className, playfair.className)}>
+      <body className={classNames(inter.variable, playfair.variable)}>
         {/* header */}
         <Header />
         {children}
