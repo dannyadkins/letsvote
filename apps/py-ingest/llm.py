@@ -7,6 +7,7 @@ import instructor
 from openai import OpenAI
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from cache import LocalCache
 
 load_dotenv()
 

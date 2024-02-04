@@ -36,22 +36,28 @@ class VectorSimilarityRelevanceChecker(AbstractRelevanceChecker):
         class RelevanceResponse(BaseModel):
             is_relevant: bool
 
-        topics_are_related = self.vector_model.generate("Here are our topics: " + " ".join(self.topics) + ". Here is the data: " + data + " Is the data relevant to the topics? ", response_model=RelevanceResponse)
+        topics_are_related = self.vector_model.generate("Here are our topics: " + ",".join(self.topics) + ". Here is the data: " + data + " Is the data relevant to the topics? ", response_model=RelevanceResponse)
         return topics_are_related.is_relevant
-    
 def test_vector_similarity_relevance_checker():
-    checker = VectorSimilarityRelevanceChecker([".*"], ["voting", "elections", "democracy"])
+    checker = VectorSimilarityRelevanceChecker([".*"], ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"])
     # Relevant content tests
     assert checker.is_relevant("https://example.com", "The importance of voting in democratic elections") == True
     assert checker.is_relevant("https://example.com", "How to register for voting?") == True
     assert checker.is_relevant("https://example.com", "Upcoming elections and why every vote counts") == True
     # Fringe cases
-    assert checker.is_relevant("https://example.com", "The history of democracy in ancient civilizations") == True
-    assert checker.is_relevant("https://example.com", "Social media's impact on voting behavior") == True
+    assert checker.is_relevant("https://example.com", "The history of democracy in ancient civilizations") == False
+    assert checker.is_relevant("https://example.com", "Social media's impact on voting behavior") == False
+    assert checker.is_relevant("https://example.com", "Comparing voting systems across the world") == False
+    assert checker.is_relevant("https://example.com", "The role of electoral colleges in the US election system") == True
+    assert checker.is_relevant("https://example.com", "Voter suppression tactics in historical and modern contexts") == False
+    # More fringe cases
+    assert checker.is_relevant("https://example.com", "The psychological effects of political campaigns on voters") == False
+    assert checker.is_relevant("https://example.com", "The influence of third-party candidates on election outcomes") == False
     # Irrelevant content tests
     assert checker.is_relevant("https://example.com", "The best apple pie recipe") == False
     assert checker.is_relevant("https://example.com", "Top 10 vacation spots for this summer") == False
     assert checker.is_relevant("https://example.com", "The life cycle of a banana tree") == False
+    assert checker.is_relevant("https://example.com", "Latest trends in summer fashion") == False
 
 if __name__ == "__main__":
     test_vector_similarity_relevance_checker()
