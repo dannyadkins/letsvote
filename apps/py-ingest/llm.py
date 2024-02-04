@@ -6,9 +6,11 @@ import openai
 import instructor
 from openai import OpenAI
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Enables `response_model`
-
 
 class AbstractLLM(ABC):
     @abstractmethod
@@ -18,11 +20,12 @@ class AbstractLLM(ABC):
 
 class GPT(AbstractLLM):
     def __init__(self, version: str, system_prompt: str = None):
-        openai = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+        openai = OpenAI()
         client = instructor.patch(OpenAI())
         self.client = client
-        
-        self.model_version = "gpt-3.5-turbo" if self.version == "3.5" else "gpt-4-turbo"
+
+        self.model_version = "gpt-3.5-turbo" if version == "3.5" else "gpt-4-turbo"
+        self.system_prompt = system_prompt
 
     def generate(self, prompt: str, response_model: BaseModel = None, functions: list = []):
         messages = [{"role": "user", "content": prompt}]
@@ -38,4 +41,7 @@ class GPT(AbstractLLM):
             max_tokens=64,
             top_p=1
         )
+
+        if (response_model):
+            return response
         return response.choices[0].message['content']
