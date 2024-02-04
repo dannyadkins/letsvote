@@ -28,7 +28,7 @@ class GPT(AbstractLLM):
         self.model_version = "gpt-3.5-turbo" if version == "3.5" else "gpt-4-turbo"
         self.system_prompt = system_prompt
 
-    def generate(self, prompt: str, response_model: BaseModel = None, functions: list = []):
+    def generate(self, prompt: str, response_model: BaseModel = None, functions: list = [], temperature: float = 0, max_tokens: int = 64, top_p: float = 1):
         messages = [{"role": "user", "content": prompt}]
         if self.system_prompt:
             messages.insert(0, {"role": "system", "content": self.system_prompt})
@@ -38,9 +38,9 @@ class GPT(AbstractLLM):
             messages=messages,
             functions=functions,
             response_model=response_model,
-            temperature=0.8,
-            max_tokens=64,
-            top_p=1
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p
         )
 
         if (response_model):

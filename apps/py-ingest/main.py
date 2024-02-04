@@ -6,39 +6,30 @@ from bs4 import BeautifulSoup
 import time
 from datetime import datetime, timedelta
 import re
-from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, VectorSimilarityRelevanceChecker
+from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, LLMRelevanceChecker
+from clean import AbstractDataCleaner, SimpleDataCleaner
 
 class AbstractDataExtractor(ABC):
     @abstractmethod
-    def extract(self, url: str):
+    def extract(self, url: str) -> BeautifulSoup:
         pass
 
-    def get_html(self, url: str):
+    def get_html(self, url: str) -> bytes:
         response = requests.get(url)
         if response.status_code == 200:
             return response.content
         else:
             return None
     
-    def parse_html(self, html: str):
+    def parse_html(self, html: bytes) -> BeautifulSoup:
         return BeautifulSoup(html, 'html.parser')
 
 class SimpleDataExtractor(AbstractDataExtractor):
-    def extract(self, url: str):
+    def extract(self, url: str) -> BeautifulSoup:
         html = self.get_html(url)
         if not html:
             raise Exception(f"Failed to get html from {url}")
         return self.parse_html(html)
-
-class AbstractDataCleaner(ABC):
-    @abstractmethod
-    def clean(self, raw_data: str):
-        pass
-
-class SimpleDataCleaner(AbstractDataCleaner):
-    def clean(self, raw_data: str):
-        return f"Cleaned {raw_data}"
-
 
 class AbstractQueueManager(ABC):
     @abstractmethod
@@ -72,12 +63,12 @@ class SimpleQueueManager(AbstractQueueManager):
         return None
     
 class IngestionEngine:
-    def __init__(self, extractor: AbstractDataExtractor, cleaner: AbstractDataCleaner, relevance_checker: AbstractRelevanceChecker, db: AbstractDatabase, queue_manager: AbstractQueueManager):
+    def __init__(self, extractor: AbstractDataExtractor, cleaner: AbstractDataCleaner, relevance_checker: AbstractRelevanceChecker, db: AbstractDatabase, queue: AbstractQueueManager):
         self.extractor = extractor
         self.cleaner = cleaner
         self.relevance_checker = relevance_checker
         self.db = db
-        self.queue_manager = queue_manager
+        self.queue = queue
         self.visited_urls = {}
 
 
@@ -86,9 +77,9 @@ class IngestionEngine:
 
     def run(self, seed_url: str):
         normalized_seed_url = self.normalize_url(seed_url)
-        self.queue_manager.add([normalized_seed_url])
+        self.queue.add([normalized_seed_url])
         while True:
-            current_url = self.queue_manager.pop()
+            current_url = self.queue.pop()
             if not current_url:
                 print("Queue is empty, exiting")
                 break
@@ -102,9 +93,12 @@ class IngestionEngine:
             except Exception as e:
                 # put back in the queue on failure 
                 print(f"Failed to extract data from {current_url}: {e}")
-                self.queue_manager.add([current_url], delay=60)
+                self.queue.add([current_url], delay=60)
+                continue 
 
             pre_cleaned_data = self.cleaner.clean(raw_data)
+            print(pre_cleaned_data)
+
             if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
                 print(f"{current_url} is not relevant, skipping")
                 continue 
@@ -115,11 +109,13 @@ class IngestionEngine:
             children_urls = extract_links(current_url, pre_cleaned_data)
             for url in children_urls:
                 normalized_url = self.normalize_url(url)
-                self.queue_manager.add([normalized_url])
+                self.queue.add([normalized_url])
 
 # We use OOP because we want to play with many different implementations of certain components
 
+relevance_checker = LLMRelevanceChecker([".*\.gov"], ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"])
+
 # Example usage:
-engine = IngestionEngine(SimpleDataExtractor(), SimpleDataCleaner(), SimpleRelevanceChecker(url_regexes=[".*example\.com.*"], topics=["example"]), SimpleDatabase(), SimpleQueueManager())
-engine.run("http://example.com")
+engine = IngestionEngine(SimpleDataExtractor(), SimpleDataCleaner(), relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+engine.run("https://www.usa.gov/voting-and-elections")
 
