@@ -40,6 +40,10 @@ class AbstractQueueManager(ABC):
     def pop(self):
         pass
 
+    @abstractmethod 
+    def exists(self, item):
+        pass
+
 class SimpleQueueManager(AbstractQueueManager):
     def __init__(self):
         self.queue = []
@@ -61,6 +65,9 @@ class SimpleQueueManager(AbstractQueueManager):
                 continue
             return self.queue.pop(i)
         return None
+
+    def exists(self, item):
+        return item in self.queue
 
 # TODO make priority queue manager, maybe with LLM to assign priority levels to different URLs
 
@@ -115,7 +122,7 @@ class IngestionEngine:
             children_urls = extract_links(current_url, raw_data)
 
             # filter by children not already visited; TODO make this more robust with a bloom filter? And not just skipping preemptively
-            children_urls = [url for url in children_urls if url not in self.visited_urls]
+            children_urls = [url for url in children_urls if url not in self.visited_urls and not self.queue.exists(url)]
 
             print("Putting children: ", children_urls)
             for url in children_urls:
