@@ -40,9 +40,18 @@ class VectorSimilarityRelevanceChecker(AbstractRelevanceChecker):
         return topics_are_related.is_relevant
     
 def test_vector_similarity_relevance_checker():
-    checker = VectorSimilarityRelevanceChecker([".*"], ["apple", "banana", "cherry"])
-    assert checker.is_relevant("https://example.com", "apple banana cherry") == True
-    assert checker.is_relevant("https://example.com", "The President of the United States is Bill Clinton") == False
+    checker = VectorSimilarityRelevanceChecker([".*"], ["voting", "elections", "democracy"])
+    # Relevant content tests
+    assert checker.is_relevant("https://example.com", "The importance of voting in democratic elections") == True
+    assert checker.is_relevant("https://example.com", "How to register for voting?") == True
+    assert checker.is_relevant("https://example.com", "Upcoming elections and why every vote counts") == True
+    # Fringe cases
+    assert checker.is_relevant("https://example.com", "The history of democracy in ancient civilizations") == True
+    assert checker.is_relevant("https://example.com", "Social media's impact on voting behavior") == True
+    # Irrelevant content tests
+    assert checker.is_relevant("https://example.com", "The best apple pie recipe") == False
+    assert checker.is_relevant("https://example.com", "Top 10 vacation spots for this summer") == False
+    assert checker.is_relevant("https://example.com", "The life cycle of a banana tree") == False
 
 if __name__ == "__main__":
     test_vector_similarity_relevance_checker()
