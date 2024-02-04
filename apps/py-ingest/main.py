@@ -12,13 +12,22 @@ class AbstractDataExtractor(ABC):
     def extract(self, url: str):
         pass
 
-class SimpleDataExtractor(AbstractDataExtractor):
-    def extract(self, url: str):
+    def get_html(self, url: str):
         response = requests.get(url)
         if response.status_code == 200:
-            return BeautifulSoup(response.content, 'html.parser')
+            return response.content
         else:
             return None
+    
+    def parse_html(self, html: str):
+        return BeautifulSoup(html, 'html.parser')
+
+class SimpleDataExtractor(AbstractDataExtractor):
+    def extract(self, url: str):
+        html = self.get_html(url)
+        if not html:
+            raise Exception(f"Failed to get html from {url}")
+        return self.parse_html(html)
 
 class AbstractDataCleaner(ABC):
     @abstractmethod
@@ -37,6 +46,12 @@ class AbstractRelevanceChecker(ABC):
     @abstractmethod
     def is_relevant(self, url: str, data: str):
         pass
+
+    def matches_regex(self, url: str):
+        for regex in self.url_regexes:
+            if re.match(regex, url):
+                return True
+        return False
         
 
 class SimpleRelevanceChecker(AbstractRelevanceChecker):
@@ -44,9 +59,8 @@ class SimpleRelevanceChecker(AbstractRelevanceChecker):
         super().__init__(url_regexes, topics)
 
     def is_relevant(self, url: str, data: str):
-
-        matches = any(re.match(pattern, url) for pattern in self.url_regexes)
-        return matches 
+        return self.matches_regex(url)
+    
 
 class AbstractQueueManager(ABC):
     @abstractmethod
