@@ -1,13 +1,11 @@
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
 
-# Take in a BS4 object, return a list of child links
-from urllib.parse import urljoin
-
-def extract_links(current_url: str, data: str):
-    soup = BeautifulSoup(data, 'html.parser')
+def extract_links(current_url: str, soup: BeautifulSoup):
     links = [link.get('href') for link in soup.find_all('a')]
 
-    # get rid of any empty links and merge with current_url
-    links = [urljoin(current_url, link) for link in links if link and len(link) > 0]
+    # Normalize links by ignoring fragments
+    links = [urljoin(current_url, link) for link in links if link]
+    links = [urlparse(link)._replace(fragment='').geturl() for link in links if not link.endswith('#')]
 
-    return links
+    return list(set(links))  # Remove duplicates

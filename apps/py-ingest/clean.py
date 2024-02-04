@@ -3,9 +3,12 @@ from bs4 import BeautifulSoup
 from llm import AbstractLLM, GPT
 from pydantic import BaseModel
 
+# TODO: We may want to append contextual information to each chunk, which could help in lookup.
+# For example, we could have "parent text", "html node", etc. as fields on the chunk. 
+
 class AbstractDataCleaner(ABC):
     @abstractmethod
-    def clean(self, raw_data: BeautifulSoup):
+    def get_chunks(self, raw_data: BeautifulSoup):
         pass
 
     def get_clean_text(self, raw_data: BeautifulSoup):
@@ -23,28 +26,33 @@ class AbstractDataCleaner(ABC):
         return text 
 
 class SimpleDataCleaner(AbstractDataCleaner):
-    def clean(self, raw_data: BeautifulSoup):
+    def get_chunks(self, raw_data: BeautifulSoup):
         # Strip out all scripts, styles, and unnecessary tags to return clean html nodes
-        return raw_data.get_text()
+        return [raw_data.get_text()]
 
 class LLMDataCleaner(AbstractDataCleaner):
     # initialize with a GPT("3.5") client
-    def __init__(self, gpt):
-        self.model = GPT("3.5", "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise.")
+    def __init__(self, topics=[]):
+        system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information."
+        if (topics):
+            system_prompt += " We ONLY care about text related to these topics, you must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
+        self.model = GPT("4", system_prompt=system_prompt)
         super().__init__()
 
-    def clean(self, raw_data: BeautifulSoup):
+    def get_chunks(self, raw_data: BeautifulSoup):
         class CleanResponse(BaseModel):
             chunks: list[str]
 
-        clean_text = self.model.generate(self.get_clean_text(raw_data), response_model=CleanResponse)
-        print(clean_text)
-        return clean_text.chunks
+        clean_text = self.get_clean_text(raw_data)
+
+        num_tokens = len(clean_text.split())
+        model_response = self.model.generate(clean_text, response_model=CleanResponse, max_tokens=2000)
+        return model_response.chunks
 
 import Levenshtein
 
 def test_llm_data_cleaner_chunking_and_levenshtein_distance():
-    cleaner = LLMDataCleaner(GPT("3.5"))
+    cleaner = LLMDataCleaner()
     # Test cases with expected chunked outputs and original texts for Levenshtein distance comparison
     test_cases = [
         ("<p>This is a simple paragraph.</p>", ["This is a simple paragraph."], "This is a simple paragraph."),

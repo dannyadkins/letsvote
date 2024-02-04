@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timedelta
 import re
 from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, LLMRelevanceChecker
-from clean import AbstractDataCleaner, SimpleDataCleaner
+from clean import AbstractDataCleaner, LLMDataCleaner
 
 class AbstractDataExtractor(ABC):
     @abstractmethod
@@ -61,7 +61,10 @@ class SimpleQueueManager(AbstractQueueManager):
                 continue
             return self.queue.pop(i)
         return None
-    
+
+# TODO make priority queue manager, maybe with LLM to assign priority levels to different URLs
+
+
 class IngestionEngine:
     def __init__(self, extractor: AbstractDataExtractor, cleaner: AbstractDataCleaner, relevance_checker: AbstractRelevanceChecker, db: AbstractDatabase, queue: AbstractQueueManager):
         self.extractor = extractor
@@ -86,6 +89,8 @@ class IngestionEngine:
             if current_url in self.visited_urls:
                 print(f"{current_url} has already been visited, skipping")
                 continue
+            
+            self.visited_urls[current_url] = True
 
             print(f"Processing {current_url}")
             try: 
@@ -96,26 +101,34 @@ class IngestionEngine:
                 self.queue.add([current_url], delay=60)
                 continue 
 
-            pre_cleaned_data = self.cleaner.clean(raw_data)
-            print(pre_cleaned_data)
+            pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
 
             if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
                 print(f"{current_url} is not relevant, skipping")
                 continue 
             
             # TODO: add chunking and vectorization 
+            chunks = self.cleaner.get_chunks(raw_data)
 
-            self.db.save(current_url, pre_cleaned_data)
-            children_urls = extract_links(current_url, pre_cleaned_data)
+            print(chunks)
+            # self.db.save(current_url, pre_cleaned_data)
+            children_urls = extract_links(current_url, raw_data)
+
+            # filter by children not already visited; TODO make this more robust with a bloom filter? And not just skipping preemptively
+            children_urls = [url for url in children_urls if url not in self.visited_urls]
+
+            print("Putting children: ", children_urls)
             for url in children_urls:
+
                 normalized_url = self.normalize_url(url)
                 self.queue.add([normalized_url])
 
 # We use OOP because we want to play with many different implementations of certain components
-
-relevance_checker = LLMRelevanceChecker([".*\.gov"], ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"])
+topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
+relevance_checker = LLMRelevanceChecker([".*\.gov"], topics=topics)
+cleaner = LLMDataCleaner(topics=topics)
 
 # Example usage:
-engine = IngestionEngine(SimpleDataExtractor(), SimpleDataCleaner(), relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
-engine.run("https://www.usa.gov/voting-and-elections")
+engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+engine.run("https://www.usa.gov/midterm-elections")
 

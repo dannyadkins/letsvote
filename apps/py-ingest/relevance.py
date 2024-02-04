@@ -35,7 +35,7 @@ class LLMRelevanceChecker(AbstractRelevanceChecker):
     def is_relevant(self, url: str, data: str):
         class RelevanceResponse(BaseModel):
             is_relevant: bool
-
+        data = data[:3500]
         topics_are_related = self.model.generate("Here are our topics: " + ",".join(self.topics) + ". Here is the data: " + data + " Is the data relevant to the topics? ", response_model=RelevanceResponse)
         return topics_are_related.is_relevant and self.matches_regex(url)
     

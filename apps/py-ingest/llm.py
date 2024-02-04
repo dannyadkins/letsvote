@@ -25,7 +25,7 @@ class GPT(AbstractLLM):
         client = instructor.patch(OpenAI())
         self.client = client
 
-        self.model_version = "gpt-3.5-turbo" if version == "3.5" else "gpt-4-turbo"
+        self.model_version = "gpt-3.5-turbo" if version == "3.5" else "gpt-4-0125-preview"
         self.system_prompt = system_prompt
 
     def generate(self, prompt: str, response_model: BaseModel = None, functions: list = [], temperature: float = 0, max_tokens: int = 64, top_p: float = 1):
