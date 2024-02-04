@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 import time
 from datetime import datetime, timedelta
 import re
+from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, VectorSimilarityRelevanceChecker
 
 class AbstractDataExtractor(ABC):
     @abstractmethod
@@ -38,29 +39,6 @@ class SimpleDataCleaner(AbstractDataCleaner):
     def clean(self, raw_data: str):
         return f"Cleaned {raw_data}"
 
-class AbstractRelevanceChecker(ABC):
-    def __init__(self, url_regexes: list, topics: list):
-        self.url_regexes = url_regexes
-        self.topics = topics
-
-    @abstractmethod
-    def is_relevant(self, url: str, data: str):
-        pass
-
-    def matches_regex(self, url: str):
-        for regex in self.url_regexes:
-            if re.match(regex, url):
-                return True
-        return False
-        
-
-class SimpleRelevanceChecker(AbstractRelevanceChecker):
-    def __init__(self, url_regexes: list, topics: list):
-        super().__init__(url_regexes, topics)
-
-    def is_relevant(self, url: str, data: str):
-        return self.matches_regex(url)
-    
 
 class AbstractQueueManager(ABC):
     @abstractmethod
