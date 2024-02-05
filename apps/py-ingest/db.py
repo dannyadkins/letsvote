@@ -7,6 +7,7 @@ from embed import embed
 from prisma import Prisma
 from utils import get_uuid
 from schema import Document, Chunk
+import logging
 
 class AbstractDatabase(ABC):
     @abstractmethod
@@ -19,41 +20,49 @@ class AbstractDatabase(ABC):
 
 class SimpleDatabase(AbstractDatabase):
     def save_documents(self, documents: List[Document]):
+        logging.debug("Creating directory for documents if it doesn't exist.")
         os.makedirs("./simple_db/documents", exist_ok=True)
         for document in documents:
+            logging.debug(f"Processing document with ID {document.id}")
             # get a safe key name from the document id
             safe_id = document.id.replace('/', '_').replace(':', '_').replace('.', '_')
             filename = f"./simple_db/documents/{safe_id}.txt"
             with open(filename, 'w') as file:
                 file.write(f"URL: {document.url}\nTitle: {document.title}\nAuthor: {document.author}\nDate Crawled: {document.date_crawled}\nDate Published: {document.date_published}")
-            print(f"Saved document with ID {document.id} to SimpleDatabase")
+            logging.info(f"Saved document with ID {document.id} to SimpleDatabase")
 
     def save_chunks(self, chunks: List[Chunk]):
+        logging.debug("Creating directory for chunks if it doesn't exist.")
         os.makedirs("./simple_db/chunks", exist_ok=True)
         for chunk in chunks:
+            logging.debug(f"Processing chunk for document ID {chunk.document_id}")
             # get a safe key name from the chunk document_id and index_in_doc
             safe_id = f"{chunk.document_id}_{chunk.index_in_doc}".replace('/', '_').replace(':', '_').replace('.', '_')
             filename = f"./simple_db/chunks/{safe_id}.txt"
             with open(filename, 'w') as file:
                 file.write(chunk.content)
-            print(f"Saved chunk for document ID {chunk.document_id} to SimpleDatabase")
+            logging.info(f"Saved chunk for document ID {chunk.document_id} to SimpleDatabase")
 
 class PrismaDatabase(AbstractDatabase):
     def __init__(self):
+        logging.debug("Initializing PrismaDatabase connection.")
         self.prisma = Prisma()
         self.prisma.connect()
 
     def __del__(self):
+        logging.debug("Disconnecting PrismaDatabase.")
         self.prisma.disconnect()
 
     def execute_raw_query(self, query: str):
+        logging.debug(f"Executing raw query: {query}")
         try: 
             return self.prisma.execute_raw(query)
         except Exception as e:
-            print(f"Failed to execute query: {e}")
+            logging.error(f"Failed to execute query: {e}")
 
     def save_documents(self, documents: List[Document], upsert: bool = True):
         for document in documents:
+            logging.debug(f"Preparing to save document with ID {document.id}")
             columns = ['id']
             values = [f"'{document.id}'"]
             possible_columns = ['title', 'url', 'author', 'date_crawled', 'date_published', 'topics']
@@ -76,10 +85,11 @@ class PrismaDatabase(AbstractDatabase):
             if upsert:
                 query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
-            print(f"Saved document with ID {document.id} to PrismaDatabase")
+            logging.info(f"Saved document with ID {document.id} to PrismaDatabase")
 
     def save_chunks(self, chunks: List[Chunk], upsert: bool = True):
         for chunk in chunks:
+            logging.debug(f"Preparing to save chunk for document ID {chunk.document_id}")
             columns = ['id']
             values = [f"'{chunk.id}'"]
             possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding']
@@ -99,9 +109,10 @@ class PrismaDatabase(AbstractDatabase):
             if upsert:
                 query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
-            print(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
+            logging.info(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
 
 def test_prisma_database():
+    logging.debug("Testing PrismaDatabase functionality.")
     prisma_db = PrismaDatabase()
     doc_uuid = get_uuid()
     chunk_uuid = get_uuid()
