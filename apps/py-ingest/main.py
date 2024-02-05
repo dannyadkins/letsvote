@@ -44,7 +44,7 @@ class SimpleDataExtractor(AbstractDataExtractor):
     def extract(self, url: str) -> BeautifulSoup:
         html = self.get_html(url)
         if not html:
-            logging.error(f"Failed to get html from {url}")
+            logging.error(f"IngestionEngine: Failed to get html from {url}")
         return self.parse_html(html)
 
 class AbstractQueueManager(ABC):
@@ -135,46 +135,46 @@ class IngestionEngine:
     def process_url(self, current_url: str):
         with self.lock:
             if current_url in self.visited_urls:
-                logging.info(f"{current_url} has already been visited, skipping")
+                logging.info(f"IngestionEngine: {current_url} has already been visited, skipping")
                 return
             
             self.visited_urls[current_url] = True
 
-        logging.debug(f"Processing {current_url}")
+        logging.debug(f"IngestionEngine: Processing {current_url}")
         try: 
             raw_data = self.extractor.extract(current_url)
         except Exception as e:
-            logging.warning(f"Failed to extract data from {current_url}: {e}")
+            logging.warning(f"IngestionEngine: Failed to extract data from {current_url}: {e}")
             self.queue.add([current_url], delay=60)
             return
     
-        logging.debug(f"Extracted data from {current_url}")
+        logging.debug(f"IngestionEngine: Extracted data from {current_url}")
         
         pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
 
-        logging.debug(f"Pre-cleaned data from {current_url}")
+        logging.debug(f"IngestionEngine: Pre-cleaned data from {current_url}")
 
         if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
-            logging.info(f"{current_url} is not relevant, skipping")
+            logging.info(f"IngestionEngine: {current_url} is not relevant, skipping")
             return
 
         document = self.cleaner.get_document(current_url, raw_data, meta_topics=self.meta_topics)
-        logging.debug(f"Extracted document from {current_url}")
+        logging.debug(f"IngestionEngine: Extracted document from {current_url}")
 
         chunk_contents = self.cleaner.get_chunks(raw_data)
         chunks = self.cleaner.enrich_chunks(chunk_contents, document)
         
-        logging.debug(f"Extracted {len(chunks)} chunks from {current_url}")
+        logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
 
         self.db.save_documents([document])
         self.db.save_chunks(chunks)
-        logging.info(f"Saved {len(chunks)} chunks for document {document.id}")
+        logging.info(f"IngestionEngine: Saved {len(chunks)} chunks for document {document.id}")
 
         children_urls = extract_links(current_url, raw_data)
 
         children_urls = [url for url in children_urls if url not in self.visited_urls and not self.queue.exists(url)]
 
-        logging.debug("Putting children: ", children_urls)
+        logging.debug("IngestionEngine: Putting children: ", children_urls)
         for url in children_urls:
             normalized_url = self.normalize_url(url)
             self.queue.add([normalized_url])
@@ -186,7 +186,7 @@ class IngestionEngine:
             while True:
                 current_url = self.queue.pop()
                 if not current_url:
-                    logging.info("Queue is empty, waiting for new URLs")
+                    logging.info("IngestionEngine: Queue is empty, waiting for new URLs")
                     time.sleep(10)
                     continue
                 executor.submit(self.process_url, current_url)
