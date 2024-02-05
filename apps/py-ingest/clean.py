@@ -109,8 +109,7 @@ class LLMDataCleaner(AbstractDataCleaner):
         chunks = []
         # Split the clean text into parts that are under the max_tokens limit
 
-        max_parts = 4
-        parts = split_text(clean_text, max_tokens)[:max_parts]
+        parts = split_text(clean_text, max_tokens)
 
         for part in parts:
             model_response = self.model.generate(part, response_model=CleanResponse, max_tokens=4096)
