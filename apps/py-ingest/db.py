@@ -47,7 +47,10 @@ class PrismaDatabase(AbstractDatabase):
         self.prisma.disconnect()
 
     def execute_raw_query(self, query: str):
-        return self.prisma.execute_raw(query)
+        try: 
+            return self.prisma.execute_raw(query)
+        except Exception as e:
+            print(f"Failed to execute query: {e}")
 
     def save_documents(self, documents: List[Document], upsert: bool = True):
         for document in documents:

@@ -56,10 +56,11 @@ class AbstractDataCleaner(ABC):
         chunks = []
         index = 0
         # generate a uuid 
-        id = str(uuid.uuid4())
+
         # embed all chunk contents as a batch
         embeddings = embed(chunk_contents)
         for content in chunk_contents:
+            id = str(uuid.uuid4())
             embedding = embeddings[index]
             chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
             index += 1
