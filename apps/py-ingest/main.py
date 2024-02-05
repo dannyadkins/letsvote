@@ -10,7 +10,7 @@ args = parser.parse_args()
 numeric_level = getattr(logging, args.log_level.upper(), None)
 if not isinstance(numeric_level, int):
     raise ValueError(f'Invalid log level: {args.log_level}')
-logging.basicConfig(level=numeric_level)
+logging.basicConfig(level=numeric_level, handlers=[logging.StreamHandler()], format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 from abc import ABC, abstractmethod
 from children import extract_links
@@ -85,7 +85,7 @@ class SimpleQueueManager(AbstractQueueManager):
     def exists(self, item):
         return item in self.queue
 
-from threading import Lock
+from threading import Lock, current_thread
 from concurrent.futures import ThreadPoolExecutor
 
 class ThreadedQueueManager(AbstractQueueManager):
@@ -144,41 +144,71 @@ class IngestionEngine:
         try: 
             raw_data = self.extractor.extract(current_url)
         except Exception as e:
-            logging.warning(f"IngestionEngine: Failed to extract data from {current_url}: {e}")
+            logging.error(f"IngestionEngine: Failed to extract data from {current_url} due to {e}. Retrying in 60 seconds.", exc_info=True)
             self.queue.add([current_url], delay=60)
             return
     
         logging.debug(f"IngestionEngine: Extracted data from {current_url}")
-        
-        pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
+
+        try:
+            pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to clean data from {current_url} due to {e}. Skipping URL.", exc_info=True)
+            return
 
         logging.debug(f"IngestionEngine: Pre-cleaned data from {current_url}")
 
-        if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
-            logging.info(f"IngestionEngine: {current_url} is not relevant, skipping")
+        try:
+            if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
+                logging.info(f"IngestionEngine: {current_url} is not relevant, skipping")
+                return
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to check relevance for {current_url} due to {e}. Skipping URL.", exc_info=True)
             return
 
-        document = self.cleaner.get_document(current_url, raw_data, meta_topics=self.meta_topics)
+        try:
+            document = self.cleaner.get_document(current_url, raw_data)
+            document.topics = self.meta_topics
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to extract document from {current_url} due to {e}. Skipping URL.", exc_info=True)
+            return
+
         logging.debug(f"IngestionEngine: Extracted document from {current_url}")
 
-        chunk_contents = self.cleaner.get_chunks(raw_data)
-        chunks = self.cleaner.enrich_chunks(chunk_contents, document)
-        
+        try:
+            chunk_contents = self.cleaner.get_chunks(raw_data)
+            chunks = self.cleaner.enrich_chunks(chunk_contents, document)
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to extract or enrich chunks from {current_url} due to {e}. Skipping URL.", exc_info=True)
+            return
+
         logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
 
-        self.db.save_documents([document])
-        self.db.save_chunks(chunks)
+        try:
+            self.db.save_documents([document])
+            self.db.save_chunks(chunks)
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to save documents or chunks for {current_url} due to {e}.", exc_info=True)
+            return
+
         logging.info(f"IngestionEngine: Saved {len(chunks)} chunks for document {document.id}")
 
-        children_urls = extract_links(current_url, raw_data)
+        try:
+            children_urls = extract_links(current_url, raw_data)
+        except Exception as e:
+            logging.error(f"IngestionEngine: Failed to extract links from {current_url} due to {e}. Continuing without adding children URLs.", exc_info=True)
+            children_urls = []
 
         children_urls = [url for url in children_urls if url not in self.visited_urls and not self.queue.exists(url)]
 
-        logging.debug("IngestionEngine: Putting children: ", children_urls)
+        logging.debug(f"IngestionEngine: Putting children: {children_urls}")
         for url in children_urls:
-            normalized_url = self.normalize_url(url)
-            self.queue.add([normalized_url])
-
+            try:
+                normalized_url = self.normalize_url(url)
+                self.queue.add([normalized_url])
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to normalize or add URL {url} to the queue due to {e}.", exc_info=True)
+    
     def run(self, seed_url: str):
         normalized_seed_url = self.normalize_url(seed_url)
         self.queue.add([normalized_seed_url])

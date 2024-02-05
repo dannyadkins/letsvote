@@ -14,9 +14,6 @@ from embed import embed
 # We definitely do not want to lose the context. Nikki Haley's website makes brazen claims that are not substantiated by the text.
 
 class AbstractDataCleaner(ABC):
-    def __init__(self):
-        self.model = GPT("3.5")
-
     @abstractmethod
     def get_chunks(self, raw_data: BeautifulSoup):
         pass
@@ -35,11 +32,12 @@ class AbstractDataCleaner(ABC):
         text = '\n'.join(chunk for chunk in chunks if chunk)
         return text 
     
-    def get_document(self, url: str, raw_data: BeautifulSoup, meta_topics: List[str] = []) -> Document:
+    def get_document(self, url: str, raw_data: BeautifulSoup) -> Document:
         # get the title of the page using beautifulsoup 
         title = raw_data.title.string
         # get the date of the page using beautifulsoup
         date_published = raw_data.find("meta",  property="article:published_time")
+
         if date_published:
             date_published = date_published['content']
         
@@ -52,14 +50,8 @@ class AbstractDataCleaner(ABC):
         # generate a unique objectid that can be used to identify the document, and work with postgres/other databases
         document_id = get_document_id(url)
 
-        class TopicsResponse(BaseModel):
-            topics: list[str]
-        
-        # TODO: implement dynamic topics. Feed into the model and tell which topics have already been created. 
-        model_response = {topics: []}
-
-        topics = model_response.topics + meta_topics
-        return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published, topics=[])
+        document = Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published, topics=[])
+        return document
     
     # TODO: maybe link to neighbors in document 
     def enrich_chunks(self, chunk_contents: List[str], document: Document):
