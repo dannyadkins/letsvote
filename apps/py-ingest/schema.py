@@ -32,7 +32,7 @@ def test_schema():
     INSERT INTO "Chunk" ("id", "content", "document_id", "index_in_doc", "embedding") 
     VALUES ('{new_chunk_id}', 'Test Chunk', '{document.id}', 0, '{embedding}')
     """
-    result = prisma.execute_raw(chunk_insertion_query)
+    prisma.execute_raw(chunk_insertion_query)
 
     chunk = prisma.chunk.find_unique(where={"id": new_chunk_id})
     assert chunk.content == "Test Chunk", f"Expected content to be 'Test Chunk', got {chunk.content}"
