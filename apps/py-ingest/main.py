@@ -201,7 +201,7 @@ class IngestionEngine:
             logging.error(f"IngestionEngine: Failed to extract links from {current_url} due to {e}. Continuing without adding children URLs.", exc_info=True)
             children_urls = []
 
-        children_urls = [url for url in children_urls if url not in self.visited_urls and not self.queue.exists(url)]
+        children_urls = [url for url in children_urls if url not in self.visited_urls and not self.queue.exists(url) and self.relevance_checker.is_maybe_relevant(url, pre_cleaned_data)]
 
         logging.debug(f"IngestionEngine: Putting children: {children_urls}")
         for url in children_urls:
@@ -234,13 +234,26 @@ def run_for_elections():
     engine.run("https://www.usa.gov/midterm-elections")
 
 def run_for_nikki_haley():
-    topics = ["Nikki Haley's 2024 Presidential campaign and her political views", "her tenure and track record as a politicial and concrete actions she has taken"]
-    relevance_checker = LLMRelevanceChecker([".*"], topics=topics)
+    topics = ["Nikki Haley's 2024 Presidential campaign and her political views", "Nikki Haley's tenure and track record as a politicial and concrete actions she has taken"]
+    relevance_checker = LLMRelevanceChecker(["https://nikkihaley\.com/.*"], topics=topics)
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine(["Nikki Haley 2024 Presidential Campaign", "Candidates"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
     engine.run("https://nikkihaley.com/about/")
 
-if __name__ == "__main__":
-    run_for_elections()
+def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
+    topics = [f"{candidate_name}'s 2024 Presidential campaign and their political views", f"${candidate_name}'s tenure and track record as a politicial and concrete actions they have taken"]
+    relevance_checker = LLMRelevanceChecker([
+        # some regex rule that nothing can pass 
+        "https://en.wikipedia.org/wiki/Nikki_Haley"
+    ], topics=topics)
+    cleaner = LLMDataCleaner(topics=topics)
 
+    engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
+    engine.run(wikipedia_url)
+
+if __name__ == "__main__":
+    # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
+    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+
+    # for voting, run on the official government websites 

@@ -12,6 +12,9 @@ class AbstractRelevanceChecker(ABC):
     def is_relevant(self, url: str, data: str):
         pass
 
+    def is_maybe_relevant(self, url: str, data: str):
+        return self.matches_regex(url)
+
     def matches_regex(self, url: str):
         for regex in self.url_regexes:
             if re.match(regex, url):

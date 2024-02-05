@@ -77,9 +77,9 @@ class SimpleDataCleaner(AbstractDataCleaner):
 class LLMDataCleaner(AbstractDataCleaner):
     # initialize with a GPT("3.5") client
     def __init__(self, topics=[]):
-        system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information. Skip over short pieces of text. We do NOT want meaningless things like `Learn about this` or `Find more here` if the actual info is not shared. DO NOT INCLUDE ANYTHING THAT DOES NOT HAVE A CONCRETE, USEFUL FACT."
+        system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information. Skip over short pieces of text, such as anything less than a few sentences long. We do NOT want meaningless things like `Learn about this` or `Find more here` if the actual info is not shared. DO NOT INCLUDE ANYTHING THAT DOES NOT HAVE A CONCRETE, USEFUL FACT."
         if (topics):
-            system_prompt += " We ONLY care about text related to these topics, you must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
+            system_prompt += " We ONLY care about text related to these topics, and it MUST add real information to a user's search query. You must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
         self.model = GPT("4", system_prompt=system_prompt)
         super().__init__()
 
@@ -87,11 +87,28 @@ class LLMDataCleaner(AbstractDataCleaner):
         class CleanResponse(BaseModel):
             chunks: list[str]
 
+        max_tokens=3000
+
+        def split_text(text, limit=max_tokens):
+            """
+            Recursively splits the text into halves until each part is under the limit.
+            """
+            if len(text) <= limit:
+                return [text]
+            else:
+                midpoint = len(text) // 2
+                return split_text(text[:midpoint], limit) + split_text(text[midpoint:], limit)
+
         clean_text = self.get_clean_text(raw_data)
 
-        num_tokens = len(clean_text.split())
-        model_response = self.model.generate(clean_text, response_model=CleanResponse, max_tokens=4096)
-        return model_response.chunks        
+        chunks = []
+        # Split the clean text into parts that are under the max_tokens limit
+        parts = split_text(clean_text, max_tokens)
+        for part in parts:
+            model_response = self.model.generate(part, response_model=CleanResponse, max_tokens=4096)
+            chunks.extend(model_response.chunks)
+        print("Chunks: ", chunks)
+        return chunks
 
         
 
