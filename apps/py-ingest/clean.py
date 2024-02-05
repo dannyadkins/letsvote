@@ -14,6 +14,9 @@ from embed import embed
 # We definitely do not want to lose the context. Nikki Haley's website makes brazen claims that are not substantiated by the text.
 
 class AbstractDataCleaner(ABC):
+    def __init__(self):
+        self.model = GPT("3.5")
+
     @abstractmethod
     def get_chunks(self, raw_data: BeautifulSoup):
         pass
@@ -32,7 +35,7 @@ class AbstractDataCleaner(ABC):
         text = '\n'.join(chunk for chunk in chunks if chunk)
         return text 
     
-    def get_document(self, url: str, raw_data: BeautifulSoup) -> Document:
+    def get_document(self, url: str, raw_data: BeautifulSoup, meta_topics: List[str] = []) -> Document:
         # get the title of the page using beautifulsoup 
         title = raw_data.title.string
         # get the date of the page using beautifulsoup
@@ -49,6 +52,13 @@ class AbstractDataCleaner(ABC):
         # generate a unique objectid that can be used to identify the document, and work with postgres/other databases
         document_id = get_document_id(url)
 
+        class TopicsResponse(BaseModel):
+            topics: list[str]
+        
+        # TODO: implement dynamic topics. Feed into the model and tell which topics have already been created. 
+        model_response = {topics: []}
+
+        topics = model_response.topics + meta_topics
         return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published, topics=[])
     
     # TODO: maybe link to neighbors in document 
@@ -75,7 +85,7 @@ class SimpleDataCleaner(AbstractDataCleaner):
 class LLMDataCleaner(AbstractDataCleaner):
     # initialize with a GPT("3.5") client
     def __init__(self, topics=[]):
-        system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information."
+        system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information. Skip over short pieces of text."
         if (topics):
             system_prompt += " We ONLY care about text related to these topics, you must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
         self.model = GPT("4", system_prompt=system_prompt)

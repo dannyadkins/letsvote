@@ -9,6 +9,7 @@ import re
 from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, LLMRelevanceChecker
 from clean import AbstractDataCleaner, LLMDataCleaner
 from schema import Chunk 
+from typing import List 
 
 class AbstractDataExtractor(ABC):
     @abstractmethod
@@ -105,7 +106,8 @@ class ThreadedQueueManager(AbstractQueueManager):
             return item in self.queue
 
 class IngestionEngine:
-    def __init__(self, extractor: AbstractDataExtractor, cleaner: AbstractDataCleaner, relevance_checker: AbstractRelevanceChecker, db: AbstractDatabase, queue: AbstractQueueManager, num_threads: int = 1):
+    def __init__(self, meta_topics: List[str], extractor: AbstractDataExtractor, cleaner: AbstractDataCleaner, relevance_checker: AbstractRelevanceChecker, db: AbstractDatabase, queue: AbstractQueueManager, num_threads: int = 1):
+        self.meta_topics = meta_topics
         self.extractor = extractor
         self.cleaner = cleaner
         self.relevance_checker = relevance_checker
@@ -142,7 +144,7 @@ class IngestionEngine:
             return
 
         # tries to get things like the author, etc.
-        document = self.cleaner.get_document(current_url, raw_data)
+        document = self.cleaner.get_document(current_url, raw_data, meta_topics=self.meta_topics)
         
         # TODO: vectorize, extract relevant data, and perform side effects like uploading to DB using function calling
         chunk_contents = self.cleaner.get_chunks(raw_data)
@@ -184,7 +186,7 @@ def run_for_elections():
     cleaner = LLMDataCleaner(topics=topics)
 
     # Example usage:
-    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
+    engine = IngestionEngine(["2024 United States Election", "Voting"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
     engine.run("https://www.usa.gov/midterm-elections")
 
 def run_for_nikki_haley():
@@ -193,8 +195,12 @@ def run_for_nikki_haley():
     cleaner = LLMDataCleaner(topics=topics)
 
     # Example usage:
-    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
+    engine = IngestionEngine(["Nikki Haley 2024 Presidential Campaign", "Candidates"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
     engine.run("https://nikkihaley.com/about/")
 
 if __name__ == "__main__":
     run_for_elections()
+
+# TODO:
+# - [ ] Add topics, so that we can sort by ones like "Candidate" and "US Election" for manual filtering in UI, and also create an expansive topic graph 
+# - [ ] Add a priority queue manager, maybe with LLM to assign priority levels to different URLs
