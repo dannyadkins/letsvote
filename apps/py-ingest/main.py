@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import re
 from relevance import AbstractRelevanceChecker, SimpleRelevanceChecker, LLMRelevanceChecker
 from clean import AbstractDataCleaner, LLMDataCleaner
+from schema import Chunk 
 
 class AbstractDataExtractor(ABC):
     @abstractmethod
@@ -113,12 +114,17 @@ class IngestionEngine:
             if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
                 print(f"{current_url} is not relevant, skipping")
                 continue 
-            
-            # TODO: add chunking and vectorization 
-            chunks = self.cleaner.get_chunks(raw_data)
 
-            print(chunks)
-            # self.db.save(current_url, pre_cleaned_data)
+            # tries to get things like the author, etc.
+            document = self.cleaner.get_document(current_url, raw_data)
+            
+            # TODO: vectorize, extract relevant data, and perform side effects like uploading to DB using function calling
+            chunk_contents = self.cleaner.get_chunks(raw_data)
+            chunks = self.cleaner.enrich_chunks(chunk_contents, document)
+            
+            self.db.save_document(document)
+            self.db.save_chunks(chunks)
+
             children_urls = extract_links(current_url, raw_data)
 
             # filter by children not already visited; TODO make this more robust with a bloom filter? And not just skipping preemptively
@@ -131,11 +137,23 @@ class IngestionEngine:
                 self.queue.add([normalized_url])
 
 # We use OOP because we want to play with many different implementations of certain components
-topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
-relevance_checker = LLMRelevanceChecker([".*\.gov"], topics=topics)
-cleaner = LLMDataCleaner(topics=topics)
+def run_for_elections():
+    topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
+    relevance_checker = LLMRelevanceChecker([".*\.gov"], topics=topics)
+    cleaner = LLMDataCleaner(topics=topics)
 
-# Example usage:
-engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
-engine.run("https://www.usa.gov/midterm-elections")
+    # Example usage:
+    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+    engine.run("https://www.usa.gov/midterm-elections")
 
+def run_for_nikki_haley():
+    topics = ["Nikki Haley's 2024 Presidential campaign and her political views", "her tenure and track record as a politicial and concrete actions she has taken"]
+    relevance_checker = LLMRelevanceChecker([".*"], topics=topics)
+    cleaner = LLMDataCleaner(topics=topics)
+
+    # Example usage:
+    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+    engine.run("https://nikkihaley.com/record-of-results/")
+
+if __name__ == "__main__":
+    run_for_nikki_haley()

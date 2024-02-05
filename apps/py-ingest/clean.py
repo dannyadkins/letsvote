@@ -1,10 +1,16 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
+from typing import List, Optional
 from bs4 import BeautifulSoup
 from llm import AbstractLLM, GPT
 from pydantic import BaseModel
+from schema import Chunk, Document 
+from utils import get_document_id
+from embed import embed 
 
 # TODO: We may want to append contextual information to each chunk, which could help in lookup.
 # For example, we could have "parent text", "html node", etc. as fields on the chunk. 
+# We definitely do not want to lose the context. Nikki Haley's website makes brazen claims that are not substantiated by the text.
 
 class AbstractDataCleaner(ABC):
     @abstractmethod
@@ -24,6 +30,38 @@ class AbstractDataCleaner(ABC):
         # drop blank lines
         text = '\n'.join(chunk for chunk in chunks if chunk)
         return text 
+    
+    def get_document(self, url: str, raw_data: BeautifulSoup) -> Document:
+        # get the title of the page using beautifulsoup 
+        title = raw_data.title.string
+        # get the date of the page using beautifulsoup
+        date_published = raw_data.find("meta",  property="article:published_time")
+        if date_published:
+            date_published = date_published['content']
+        
+        author = raw_data.find("meta",  property="article:author")
+        if author:
+            author = author['content']
+
+        date_crawled = datetime.now()
+
+        # generate a unique objectid that can be used to identify the document, and work with postgres/other databases
+        document_id = get_document_id(url)
+
+        return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published)
+    
+    # TODO: maybe link to neighbors in document 
+    def enrich_chunks(chunk_contents: List[str], document: Document):
+        chunks = []
+        index = 0
+        # embed all chunk contents as a batch
+        embeddings = embed(chunk_contents)
+        for content in chunk_contents:
+            embedding = embeddings[index]
+            chunks.append(Chunk(document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
+            index += 1
+        return chunks
+            
 
 class SimpleDataCleaner(AbstractDataCleaner):
     def get_chunks(self, raw_data: BeautifulSoup):
@@ -46,8 +84,11 @@ class LLMDataCleaner(AbstractDataCleaner):
         clean_text = self.get_clean_text(raw_data)
 
         num_tokens = len(clean_text.split())
-        model_response = self.model.generate(clean_text, response_model=CleanResponse, max_tokens=2000)
-        return model_response.chunks
+        model_response = self.model.generate(clean_text, response_model=CleanResponse, max_tokens=4096)
+        return model_response.chunks        
+
+        
+
 
 import Levenshtein
 

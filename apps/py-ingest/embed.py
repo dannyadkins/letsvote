@@ -2,12 +2,14 @@
 # embed a list of things
 # get cosine similarity between two things
 
-from openai import Embed
 from typing import List, Tuple
 from openai import OpenAI
 from cache import LocalCache 
+from dotenv import load_dotenv
 
-def embed(self, texts: List[str], model: str = "text-embedding-ada-002") -> List[List[float]]:
+load_dotenv()
+
+def embed(texts: List[str], model: str = "text-embedding-ada-002") -> List[List[float]]:
     """
     Get embeddings for a list of texts.
 
@@ -24,7 +26,7 @@ def embed(self, texts: List[str], model: str = "text-embedding-ada-002") -> List
         embeddings.append(response['data'][0]['embedding'])
     return embeddings
 
-def cosine_similarity(self, vec1: List[float], vec2: List[float]) -> float:
+def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
     """
     Calculate the cosine similarity between two vectors.
 
