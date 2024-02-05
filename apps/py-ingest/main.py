@@ -153,7 +153,7 @@ def run_for_nikki_haley():
 
     # Example usage:
     engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
-    engine.run("https://nikkihaley.com/record-of-results/")
+    engine.run("https://nikkihaley.com/about/")
 
 if __name__ == "__main__":
     run_for_nikki_haley()

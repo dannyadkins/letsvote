@@ -51,7 +51,7 @@ class AbstractDataCleaner(ABC):
         return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published)
     
     # TODO: maybe link to neighbors in document 
-    def enrich_chunks(chunk_contents: List[str], document: Document):
+    def enrich_chunks(self, chunk_contents: List[str], document: Document):
         chunks = []
         index = 0
         # embed all chunk contents as a batch

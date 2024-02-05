@@ -23,7 +23,7 @@ def embed(texts: List[str], model: str = "text-embedding-ada-002") -> List[List[
     for text in texts:
         text = text.replace("\n", " ")
         response = client.embeddings.create(input=[text], model=model)
-        embeddings.append(response['data'][0]['embedding'])
+        embeddings.append(response.data[0].embedding)
     return embeddings
 
 def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
@@ -41,3 +41,16 @@ def cosine_similarity(vec1: List[float], vec2: List[float]) -> float:
         # Avoid division by zero
         return 0.0
     return dot_product / (magnitude_vec1 * magnitude_vec2)
+
+def test_embed():
+    texts = [
+        "This is a test.",
+        "This is another test."
+    ]
+    embeddings = embed(texts)
+    assert len(embeddings) == 2, f"Expected 2 embeddings, got {len(embeddings)}"
+    assert len(embeddings[0]) == 1536, f"Expected 1536 dimensions, got {len(embeddings[0])}"
+
+if __name__ == "__main__":
+    test_embed()
+    print("embed.py: All tests passed!")
