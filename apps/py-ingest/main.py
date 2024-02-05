@@ -223,7 +223,7 @@ class IngestionEngine:
                     continue
                 executor.submit(self.process_url, current_url)
 
-num_threads = 1
+num_threads = 16
 
 def run_for_elections():
     topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
