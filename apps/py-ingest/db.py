@@ -29,7 +29,7 @@ class SimpleDatabase(AbstractDatabase):
             filename = f"./simple_db/documents/{safe_id}.txt"
             with open(filename, 'w') as file:
                 file.write(f"URL: {document.url}\nTitle: {document.title}\nAuthor: {document.author}\nDate Crawled: {document.date_crawled}\nDate Published: {document.date_published}")
-            logging.info(f"Saved document with ID {document.id} to SimpleDatabase")
+            logging.debug(f"Saved document with ID {document.id} to SimpleDatabase")
 
     def save_chunks(self, chunks: List[Chunk]):
         logging.debug("Creating directory for chunks if it doesn't exist.")
@@ -41,7 +41,7 @@ class SimpleDatabase(AbstractDatabase):
             filename = f"./simple_db/chunks/{safe_id}.txt"
             with open(filename, 'w') as file:
                 file.write(chunk.content)
-            logging.info(f"Saved chunk for document ID {chunk.document_id} to SimpleDatabase")
+            logging.debug(f"Saved chunk for document ID {chunk.document_id} to SimpleDatabase")
 
 class PrismaDatabase(AbstractDatabase):
     def __init__(self):

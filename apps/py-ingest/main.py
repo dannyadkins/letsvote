@@ -140,7 +140,8 @@ class IngestionEngine:
             
             self.visited_urls[current_url] = True
 
-        logging.debug(f"IngestionEngine: Processing {current_url}")
+        logging.info(f"IngestionEngine: Processing {current_url}")
+        
         try: 
             raw_data = self.extractor.extract(current_url)
         except Exception as e:
@@ -221,7 +222,7 @@ class IngestionEngine:
                     continue
                 executor.submit(self.process_url, current_url)
 
-num_threads = 1
+num_threads = 32
 
 def run_for_elections():
     topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
