@@ -74,7 +74,8 @@ class PrismaDatabase(AbstractDatabase):
                     columns.append(f'"{column}"')
                     upsert_columns.append(f'"{column}" = EXCLUDED."{column}"')
                     if isinstance(value, list):  # Assuming topics is a list
-                        values.append(f"'{{}}'")
+                        formatted_list = "{" + ",".join([f'"{item}"' for item in value]) + "}"
+                        values.append(f"'{formatted_list}'")
                     else:
                         values.append(f"'{value}'")
             
@@ -85,7 +86,6 @@ class PrismaDatabase(AbstractDatabase):
             if upsert:
                 query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
-            logging.debug(query)
             logging.debug(f"Saved document with ID {document.id} to PrismaDatabase")
 
     def save_chunks(self, chunks: List[Chunk], upsert: bool = True):
