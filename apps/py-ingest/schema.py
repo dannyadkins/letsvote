@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+import uuid
 from prisma import Prisma
 from embed import embed 
 from prisma.models import Document, Chunk
@@ -10,31 +11,30 @@ def test_schema():
     prisma.connect()
 
     # test document creation
-    document = prisma.document.create(
-        data={
-            'title': "Test Document",
-            'url': "https://example.com",
-            'date_crawled': datetime.now(),
-            'date_published': datetime.now(),
-        }
-    )
+    new_document_id = str(uuid.uuid4())
+    document_insertion_query = f"""
+    INSERT INTO "Document" ("id", "title", "url", "date_crawled", "date_published", "topics") 
+    VALUES ('{new_document_id}', 'Test Document', 'https://example.com', '{datetime.now()}', '{datetime.now()}', '{{}}')
+    """
+    prisma.execute_raw(document_insertion_query)
+
+    document = prisma.document.find_unique(where={"id": new_document_id})
     assert document.title == "Test Document", f"Expected title to be 'Test Document', got {document.title}"
     assert document.url == "https://example.com", f"Expected url to be 'https://example.com', got {document.url}"
     assert document.date_crawled, "Expected date_crawled to be set"
     assert document.date_published, "Expected date_published to be set"
 
-    
     embedding = embed(["Test Chunk"])[0]
-    print(embedding)
+
     # test chunk creation
-    chunk = prisma.chunk.create(
-        data={
-            'content': "Test Chunk",
-            'document_id': document.id,
-            'index_in_doc': 0,
-            'embedding': str(embedding) + "::vector" 
-        }
-    )
+    new_chunk_id = str(uuid.uuid4())
+    chunk_insertion_query = f"""
+    INSERT INTO "Chunk" ("id", "content", "document_id", "index_in_doc", "embedding") 
+    VALUES ('{new_chunk_id}', 'Test Chunk', '{document.id}', 0, '{embedding}')
+    """
+    result = prisma.execute_raw(chunk_insertion_query)
+
+    chunk = prisma.chunk.find_unique(where={"id": new_chunk_id})
     assert chunk.content == "Test Chunk", f"Expected content to be 'Test Chunk', got {chunk.content}"
     assert chunk.document_id == document.id, f"Expected document_id to be {document.id}, got {chunk.document_id}"
 
@@ -45,12 +45,20 @@ def test_schema():
     assert chunks[0].document_id == document.id, f"Expected document_id to be {document.id}, got {chunks[0].document_id}"
 
     # test chunk deletion
-    prisma.chunk.delete(where={"id": chunk.id})
+    chunk_deletion_query = f"""
+    DELETE FROM "Chunk" WHERE "id" = '{chunk.id}'
+    """
+    prisma.execute_raw(chunk_deletion_query)
+
     chunks = prisma.chunk.find_many(where={"document_id": document.id})
     assert len(chunks) == 0, f"Expected 0 chunks, got {len(chunks)}"
 
     # test document deletion
-    prisma.document.delete(where={"id": document.id})
+    document_deletion_query = f"""
+    DELETE FROM "Document" WHERE "id" = '{document.id}'
+    """
+    prisma.execute_raw(document_deletion_query)
+
     document = prisma.document.find_unique(where={"id": document.id})
     assert document is None, "Expected document to be deleted"
 

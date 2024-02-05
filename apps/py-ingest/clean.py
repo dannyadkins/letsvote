@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import List, Optional
+import uuid
 from bs4 import BeautifulSoup
 from llm import AbstractLLM, GPT
 from pydantic import BaseModel
@@ -54,11 +55,13 @@ class AbstractDataCleaner(ABC):
     def enrich_chunks(self, chunk_contents: List[str], document: Document):
         chunks = []
         index = 0
+        # generate a uuid 
+        id = str(uuid.uuid4())
         # embed all chunk contents as a batch
         embeddings = embed(chunk_contents)
         for content in chunk_contents:
             embedding = embeddings[index]
-            chunks.append(Chunk(document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
+            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
             index += 1
         return chunks
             

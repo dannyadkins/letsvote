@@ -4,20 +4,21 @@ datasource db {
 }
 
 model Document {
-  id             Int      @id @default(autoincrement())
+  id             String   @id
   url            String
-  date_published  DateTime? 
-  date_crawled    DateTime @default(now())
+  author         String?
+  date_published DateTime? 
+  date_crawled   DateTime @default(now())
   title          String
   topics         String[]
-  chunks         Chunk[]
+  chunks         Chunk[]  @relation("DocumentChunks")
 }
 
 model Chunk {
-  id          Int      @id @default(autoincrement())
-  document_id  Int
-  index_in_doc       Int
-  embedding   Unsupported("vector(1536)")?
-  Document    Document @relation(fields: [document_id], references: [id])
-  content     String
+  id           String   @id
+  document_id  String?
+  index_in_doc Int
+  embedding    Unsupported("vector(1536)")?
+  Document     Document? @relation(fields: [document_id], references: [id], name: "DocumentChunks")
+  content      String
 }
