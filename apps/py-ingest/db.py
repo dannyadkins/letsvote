@@ -2,8 +2,11 @@ from abc import ABC, abstractmethod
 # import psycopg2
 # from psycopg2.extras import RealDictCursor
 import os
-from schema import Document, Chunk
 from typing import List
+from embed import embed 
+from prisma import Prisma
+from utils import get_uuid
+from schema import Document, Chunk
 
 class AbstractDatabase(ABC):
     @abstractmethod
@@ -35,34 +38,45 @@ class SimpleDatabase(AbstractDatabase):
                 file.write(chunk.content)
             print(f"Saved chunk for document ID {chunk.document_id} to SimpleDatabase")
 
-# class PostgresDatabase(AbstractDatabase):
-#     def __init__(self):
-#         self.connection = psycopg2.connect(
-#             dbname=os.getenv('DB_NAME'),
-#             user=os.getenv('DB_USER'),
-#             password=os.getenv('DB_PASSWORD'),
-#             host=os.getenv('DB_HOST')
-#         )
-#         self.cursor = self.connection.cursor(cursor_factory=RealDictCursor)
+class PrismaDatabase(AbstractDatabase):
+    def __init__(self):
+        self.prisma = Prisma()
+        self.prisma.connect()
 
-#     def save_documents(self, documents: List[Document]):
-#         for document in documents:
-#             try:
-#                 self.cursor.execute("INSERT INTO documents (id, url, title, author, date_crawled, date_published) VALUES (%s, %s, %s, %s, %s, %s)", 
-#                                     (document.id, document.url, document.title, document.author, document.date_crawled, document.date_published))
-#                 self.connection.commit()
-#                 print(f"Saved document with ID {document.id} to PostgreSQL")
-#             except Exception as e:
-#                 print(f"An error occurred while saving document {document.id}: {e}")
-#                 self.connection.rollback()
+    def __del__(self):
+        self.prisma.disconnect()
 
-#     def save_chunks(self, chunks: List[Chunk]):
-#         for chunk in chunks:
-#             try:
-#                 self.cursor.execute("INSERT INTO chunks (content, index_in_doc, document_id) VALUES (%s, %s, %s)", 
-#                                     (chunk.content, chunk.index_in_doc, chunk.document_id))
-#                 self.connection.commit()
-#                 print(f"Saved chunk for document ID {chunk.document_id} to PostgreSQL")
-#             except Exception as e:
-#                 print(f"An error occurred while saving chunk for document {chunk.document_id}: {e}")
-#                 self.connection.rollback()
+    def execute_raw_query(self, query: str):
+        return self.prisma.execute_raw(query)
+
+    def save_documents(self, documents: List[Document]):
+        for document in documents:
+            query = f"""
+            INSERT INTO "Document" ("id", "title", "url", "author", "date_crawled", "date_published", "topics") 
+            VALUES ('{document.id}', '{document.title}', '{document.url}', '{document.author}', '{document.date_crawled}', '{document.date_published}', '{{}}')
+            """
+            self.execute_raw_query(query)
+            print(f"Saved document with ID {document.id} to PrismaDatabase")
+
+    def save_chunks(self, chunks: List[Chunk]):
+        for chunk in chunks:
+            query = f"""
+            INSERT INTO "Chunk" ("id", "content", "document_id", "index_in_doc", "embedding") 
+            VALUES ('{chunk.id}', '{chunk.content}', '{chunk.document_id}', {chunk.index_in_doc}, '{chunk.embedding}')
+            """
+            self.execute_raw_query(query)
+            print(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
+
+def test_prisma_database():
+    prisma_db = PrismaDatabase()
+    doc_uuid = get_uuid()
+    chunk_uuid = get_uuid()
+    prisma_db.save_documents([Document(id=doc_uuid, title="Test Document", url="https://example.com", author="Test Author", date_crawled="2022-01-01", date_published="2022-01-01", topics=[])])
+    prisma_db.save_chunks([Chunk(id=chunk_uuid, content="Test Chunk", document_id=doc_uuid, index_in_doc=0, embedding=embed("Test Chunk")[0])])
+    prisma_db.execute_raw_query("DELETE FROM \"Document\" WHERE \"id\" = 'test_document_id'")
+    prisma_db.execute_raw_query("DELETE FROM \"Chunk\" WHERE \"id\" = 'test_chunk_id'")
+    del prisma_db
+
+if __name__ == "__main__":
+    test_prisma_database()
+    print("db.py: All tests passed!")    

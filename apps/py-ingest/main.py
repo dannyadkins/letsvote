@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from children import extract_links
-from db import AbstractDatabase, SimpleDatabase
+from db import AbstractDatabase, PrismaDatabase
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -122,7 +122,7 @@ class IngestionEngine:
             chunk_contents = self.cleaner.get_chunks(raw_data)
             chunks = self.cleaner.enrich_chunks(chunk_contents, document)
             
-            self.db.save_document(document)
+            self.db.save_documents([document])
             self.db.save_chunks(chunks)
 
             children_urls = extract_links(current_url, raw_data)
@@ -143,7 +143,7 @@ def run_for_elections():
     cleaner = LLMDataCleaner(topics=topics)
 
     # Example usage:
-    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager())
     engine.run("https://www.usa.gov/midterm-elections")
 
 def run_for_nikki_haley():
@@ -152,7 +152,7 @@ def run_for_nikki_haley():
     cleaner = LLMDataCleaner(topics=topics)
 
     # Example usage:
-    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=SimpleDatabase(), queue=SimpleQueueManager())
+    engine = IngestionEngine(SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager())
     engine.run("https://nikkihaley.com/about/")
 
 if __name__ == "__main__":

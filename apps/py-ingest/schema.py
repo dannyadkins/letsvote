@@ -3,7 +3,29 @@ from typing import List, Optional
 import uuid
 from prisma import Prisma
 from embed import embed 
-from prisma.models import Document, Chunk
+
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class Document(BaseModel):
+    id: str
+    url: str
+    author: Optional[str] = None
+    date_published: Optional[datetime] = None
+    date_crawled: datetime = Field(default_factory=datetime.now)
+    title: str
+    topics: List[str] = []
+    chunks: List['Chunk'] = []
+
+class Chunk(BaseModel):
+    id: str
+    document_id: Optional[str] = None
+    index_in_doc: int
+    embedding: Optional[List[float]] = None
+    content: str
+    Document: Optional[Document] = None
+
+Document.update_forward_refs()
 
 
 def test_schema():
