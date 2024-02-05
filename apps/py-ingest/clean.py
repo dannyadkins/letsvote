@@ -48,7 +48,7 @@ class AbstractDataCleaner(ABC):
         # generate a unique objectid that can be used to identify the document, and work with postgres/other databases
         document_id = get_document_id(url)
 
-        return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published)
+        return Document(id=document_id, url=url, title=title, author=author, date_crawled=date_crawled, date_published=date_published, topics=[])
     
     # TODO: maybe link to neighbors in document 
     def enrich_chunks(self, chunk_contents: List[str], document: Document):
