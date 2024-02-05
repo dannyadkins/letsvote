@@ -85,7 +85,8 @@ class PrismaDatabase(AbstractDatabase):
             if upsert:
                 query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
-            logging.info(f"Saved document with ID {document.id} to PrismaDatabase")
+            logging.debug(query)
+            logging.debug(f"Saved document with ID {document.id} to PrismaDatabase")
 
     def save_chunks(self, chunks: List[Chunk], upsert: bool = True):
         for chunk in chunks:
@@ -109,7 +110,7 @@ class PrismaDatabase(AbstractDatabase):
             if upsert:
                 query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
-            logging.info(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
+            logging.debug(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
 
 def test_prisma_database():
     logging.debug("Testing PrismaDatabase functionality.")
@@ -117,7 +118,7 @@ def test_prisma_database():
     doc_uuid = get_uuid()
     chunk_uuid = get_uuid()
     # Initial insert
-    prisma_db.save_documents([Document(id=doc_uuid, title="Test Document", url="https://example.com", author="Test Author", date_crawled="2022-01-01", date_published="2022-01-01", topics=[])])
+    prisma_db.save_documents([Document(id=doc_uuid, title="Test Document", url="https://example.com", author="Test Author", date_crawled="2022-01-01", date_published="2022-01-01", topics=["2024 Election"])])
     prisma_db.save_chunks([Chunk(id=chunk_uuid, content="Test Chunk", document_id=doc_uuid, index_in_doc=0, embedding=embed("Test Chunk")[0])])
     # Upsert with the same ID but different content to test upsert functionality
     prisma_db.save_documents([Document(id=doc_uuid, title="Updated Test Document", url="https://example.com/updated", author="Updated Test Author", date_crawled="2022-02-01", date_published="2022-02-01", topics=["updated"])], upsert=True)

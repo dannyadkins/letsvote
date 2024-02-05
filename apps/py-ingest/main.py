@@ -141,7 +141,7 @@ class IngestionEngine:
             self.visited_urls[current_url] = True
 
         logging.info(f"IngestionEngine: Processing {current_url}")
-        
+
         try: 
             raw_data = self.extractor.extract(current_url)
         except Exception as e:
@@ -170,6 +170,7 @@ class IngestionEngine:
         try:
             document = self.cleaner.get_document(current_url, raw_data)
             document.topics = self.meta_topics
+            print("Document topics: ", document)
         except Exception as e:
             logging.error(f"IngestionEngine: Failed to extract document from {current_url} due to {e}. Skipping URL.", exc_info=True)
             return
@@ -222,7 +223,7 @@ class IngestionEngine:
                     continue
                 executor.submit(self.process_url, current_url)
 
-num_threads = 32
+num_threads = 1
 
 def run_for_elections():
     topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
