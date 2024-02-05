@@ -49,21 +49,52 @@ class PrismaDatabase(AbstractDatabase):
     def execute_raw_query(self, query: str):
         return self.prisma.execute_raw(query)
 
-    def save_documents(self, documents: List[Document]):
+    def save_documents(self, documents: List[Document], upsert: bool = True):
         for document in documents:
-            query = f"""
-            INSERT INTO "Document" ("id", "title", "url", "author", "date_crawled", "date_published", "topics") 
-            VALUES ('{document.id}', '{document.title}', '{document.url}', '{document.author}', '{document.date_crawled}', '{document.date_published}', '{{}}')
-            """
+            columns = ['id']
+            values = [f"'{document.id}'"]
+            possible_columns = ['title', 'url', 'author', 'date_crawled', 'date_published', 'topics']
+            upsert_columns = []
+
+            for column in possible_columns:
+                value = getattr(document, column, None)
+                if value is not None:
+                    columns.append(f'"{column}"')
+                    upsert_columns.append(f'"{column}" = EXCLUDED."{column}"')
+                    if isinstance(value, list):  # Assuming topics is a list
+                        values.append(f"'{{}}'")
+                    else:
+                        values.append(f"'{value}'")
+            
+            columns_str = ", ".join(columns)
+            values_str = ", ".join(values)
+            upsert_str = ", ".join(upsert_columns)
+            query = f'INSERT INTO "Document" ({columns_str}) VALUES ({values_str})'
+            if upsert:
+                query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
             print(f"Saved document with ID {document.id} to PrismaDatabase")
 
-    def save_chunks(self, chunks: List[Chunk]):
+    def save_chunks(self, chunks: List[Chunk], upsert: bool = True):
         for chunk in chunks:
-            query = f"""
-            INSERT INTO "Chunk" ("id", "content", "document_id", "index_in_doc", "embedding") 
-            VALUES ('{chunk.id}', '{chunk.content}', '{chunk.document_id}', {chunk.index_in_doc}, '{chunk.embedding}')
-            """
+            columns = ['id']
+            values = [f"'{chunk.id}'"]
+            possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding']
+            upsert_columns = []
+
+            for column in possible_columns:
+                value = getattr(chunk, column, None)
+                if value is not None:
+                    columns.append(f'"{column}"')
+                    upsert_columns.append(f'"{column}" = EXCLUDED."{column}"')
+                    values.append(f"'{value}'" if column != 'index_in_doc' else str(value))
+            
+            columns_str = ", ".join(columns)
+            values_str = ", ".join(values)
+            upsert_str = ", ".join(upsert_columns)
+            query = f'INSERT INTO "Chunk" ({columns_str}) VALUES ({values_str})'
+            if upsert:
+                query += f' ON CONFLICT (id) DO UPDATE SET {upsert_str}'
             self.execute_raw_query(query)
             print(f"Saved chunk for document ID {chunk.document_id} to PrismaDatabase")
 
@@ -71,10 +102,15 @@ def test_prisma_database():
     prisma_db = PrismaDatabase()
     doc_uuid = get_uuid()
     chunk_uuid = get_uuid()
+    # Initial insert
     prisma_db.save_documents([Document(id=doc_uuid, title="Test Document", url="https://example.com", author="Test Author", date_crawled="2022-01-01", date_published="2022-01-01", topics=[])])
     prisma_db.save_chunks([Chunk(id=chunk_uuid, content="Test Chunk", document_id=doc_uuid, index_in_doc=0, embedding=embed("Test Chunk")[0])])
-    prisma_db.execute_raw_query("DELETE FROM \"Document\" WHERE \"id\" = 'test_document_id'")
-    prisma_db.execute_raw_query("DELETE FROM \"Chunk\" WHERE \"id\" = 'test_chunk_id'")
+    # Upsert with the same ID but different content to test upsert functionality
+    prisma_db.save_documents([Document(id=doc_uuid, title="Updated Test Document", url="https://example.com/updated", author="Updated Test Author", date_crawled="2022-02-01", date_published="2022-02-01", topics=["updated"])], upsert=True)
+    prisma_db.save_chunks([Chunk(id=chunk_uuid, content="Updated Test Chunk", document_id=doc_uuid, index_in_doc=1, embedding=embed("Updated Test Chunk")[0])], upsert=True)
+    # Cleanup
+    prisma_db.execute_raw_query("DELETE FROM \"Document\" WHERE \"id\" = '" + doc_uuid + "'")
+    prisma_db.execute_raw_query("DELETE FROM \"Chunk\" WHERE \"id\" = '" + chunk_uuid + "'")
     del prisma_db
 
 if __name__ == "__main__":
