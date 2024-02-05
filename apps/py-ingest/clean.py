@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+import logging
 from typing import List, Optional
 import uuid
 from bs4 import BeautifulSoup
@@ -59,11 +60,15 @@ class AbstractDataCleaner(ABC):
         index = 0
         # generate a uuid 
 
-        # embed all chunk contents as a batch
-        embeddings = embed(chunk_contents)
+        # embed each one with error handled, if it fails delete the chunk and continue
+
         for content in chunk_contents:
             id = str(uuid.uuid4())
-            embedding = embeddings[index]
+            try: 
+                embedding = embed([content])[0]
+            except:
+                logging.info(f"Failed to embed chunk with content: {content}")
+                continue
             chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
             index += 1
         return chunks
@@ -103,12 +108,15 @@ class LLMDataCleaner(AbstractDataCleaner):
 
         chunks = []
         # Split the clean text into parts that are under the max_tokens limit
-        parts = split_text(clean_text, max_tokens)
+
+        max_parts = 4
+        parts = split_text(clean_text, max_tokens)[:max_parts]
+
         for part in parts:
             model_response = self.model.generate(part, response_model=CleanResponse, max_tokens=4096)
             chunks.extend(model_response.chunks)
         print("Chunks: ", chunks)
-        return chunks
+        return [chunk for chunk in chunks if len(chunk) > 30]
 
         
 
