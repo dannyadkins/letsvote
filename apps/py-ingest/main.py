@@ -206,7 +206,7 @@ class IngestionEngine:
             print("Exiting...")
 
 
-num_threads = 1
+num_threads = 8
 
 def run_for_elections():
     topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
@@ -295,10 +295,13 @@ def run_for_state_elections():
 
         engine = IngestionEngine([state, "State Elections", "2024 United States Election", "Voting"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
         engine.run(state_seed_urls, max_depth=3)
+        
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
     # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    run_for_elections()
+    run_for_candidate_wikipedia("Joe Biden", "https://en.wikipedia.org/wiki/Joe_Biden")
+
+    # run_for_elections()
     # for voting, run on the official government websites 
     # run_for_state_elections()

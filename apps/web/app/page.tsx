@@ -3,6 +3,7 @@ import { Input } from "@/components/atoms/Input";
 import Image from "next/image";
 import { SearchBar } from "../components/organisms/SearchBar";
 import { ArrowLink } from "@/components/atoms/ArrowLink";
+import { canididates } from "@/libs/candidates";
 
 export default function Home() {
   return (
@@ -55,8 +56,17 @@ export default function Home() {
             </ArrowLink>
             Lalalala
           </div>
-
-          <h2> Learn about candidates </h2>
+          <div>
+            <h2> Learn about candidates </h2>
+            {canididates.map((candidate) => (
+              <ArrowLink
+                key={candidate.name}
+                href={`/candidates/${candidate.slug}`}
+              >
+                {candidate.name}
+              </ArrowLink>
+            ))}
+          </div>
           <h2> Ask questions </h2>
         </div>
       </div>
