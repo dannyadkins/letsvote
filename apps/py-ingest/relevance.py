@@ -39,7 +39,7 @@ class LLMRelevanceChecker(AbstractRelevanceChecker):
         class RelevanceResponse(BaseModel):
             is_relevant: bool
         data = data[:3500]
-        topics_are_related = self.model.generate("Here are our topics: " + ",".join(self.topics) + ". Here is the data: " + data + " Is the data relevant to the topics? ", response_model=RelevanceResponse)
+        topics_are_related = self.model.generate("Here are our topics: " + ",".join(self.topics) + " from the url "  + url + ". Here is the data: " + data + " Is it possible that this page is relevant to any of the topics, or is it seemingly unrelated? ", response_model=RelevanceResponse)
         return topics_are_related.is_relevant and self.matches_regex(url)
     
 def test_llm_relevance_checker():
