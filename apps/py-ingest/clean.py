@@ -64,7 +64,8 @@ class AbstractDataCleaner(ABC):
         for content in chunk_contents:
             id = get_chunk_id(content)
             try: 
-                embedding = embed([content])[0]
+                # We embed the title and the content together to get a better embedding
+                embedding = embed([f"{document.title} ({document.url}): {content}"])[0]
             except:
                 logging.info(f"Failed to embed chunk with content: {content}")
                 continue
