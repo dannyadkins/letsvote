@@ -17,8 +17,18 @@ export default async function SearchPage({
   // hydrate this page with that query,
 
   // then execute the proper prisma query
-  const reuslts = await knn({ text: "Nikki Haley's views on abortion" }, 10);
-  console.log(reuslts);
+  const results = await knn({ text: "Nikki Haley's views on abortion" }, 10);
 
-  return <div>{/* suspense skeleton  */}</div>;
+  return (
+    <div>
+      <div className="flex flex-col gap-2">
+        {results.map((result) => (
+          <div key={result.content} className="bg-beige-50">
+            <p>{result.content}</p>
+            <p>{result.distance}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

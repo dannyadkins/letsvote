@@ -18,20 +18,27 @@ export const embed = async (
     },
     body: JSON.stringify({
       model,
-      input: text.replace("\n", " "),
+      input: text,
     }),
   });
   const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
   return data?.data?.[0]?.embedding;
 };
 
 export const knn = async (
   input: { embedding?: number[]; text?: string },
   k: number
-) => {
-  const { embedding, text } = input;
+): Promise<{ content: string; distance: number }[]> => {
+  let { embedding, text } = input;
   if (!embedding && !text) {
     throw new Error("Must provide either an embedding or text");
+  }
+
+  if (!embedding && text) {
+    embedding = await embed(text);
   }
 
   return await prisma.$queryRaw`SELECT content, embedding <=> ${embedding}::vector AS distance FROM "Chunk" ORDER BY distance LIMIT ${k}`;
