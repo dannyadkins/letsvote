@@ -214,7 +214,7 @@ def run_for_elections():
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine(["2024 United States Election", "Voting"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run("https://www.usa.gov/midterm-elections")
+    engine.run(["https://www.usa.gov/midterm-elections"])
 
 def run_for_nikki_haley():
     topics = ["Nikki Haley's 2024 Presidential campaign and her political views", "Nikki Haley's tenure and track record as a politicial and concrete actions she has taken"]
@@ -222,7 +222,7 @@ def run_for_nikki_haley():
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine(["Nikki Haley 2024 Presidential Campaign", "Candidates"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run("https://nikkihaley.com/about/")
+    engine.run(["https://nikkihaley.com/about/"])
 
 def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     topics = [f"{candidate_name}'s 2024 Presidential campaign and their political views", f"${candidate_name}'s tenure and track record as a politicial and concrete actions they have taken"]
@@ -232,7 +232,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run(wikipedia_url, start_at_depth=1, max_depth=2)
+    engine.run([wikipedia_url], start_at_depth=1, max_depth=3)
 
 def run_for_state_elections():
     # all 50 states
@@ -294,11 +294,11 @@ def run_for_state_elections():
         cleaner = LLMDataCleaner(topics=topics)
 
         engine = IngestionEngine([state, "State Elections", "2024 United States Election", "Voting"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-        engine.run(state_seed_urls, max_depth=1)
+        engine.run(state_seed_urls, max_depth=3)
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
-    # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
     # run_for_elections()
     # for voting, run on the official government websites 
-    run_for_state_elections()
+    # run_for_state_elections()

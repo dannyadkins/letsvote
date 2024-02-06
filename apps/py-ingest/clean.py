@@ -87,7 +87,7 @@ class LLMDataCleaner(AbstractDataCleaner):
         system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information. Skip over short pieces of text, such as anything less than a few sentences long. We do NOT want meaningless things like `Learn about this` or `Find more here` if the actual info is not shared. DO NOT INCLUDE ANYTHING THAT DOES NOT HAVE A CONCRETE, USEFUL FACT."
         if (topics):
             system_prompt += " We ONLY care about text related to these topics, and it MUST add real information to a user's search query. You must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
-        self.model = GPT("4", system_prompt=system_prompt)
+        self.model = GPT("3.5", system_prompt=system_prompt)
         super().__init__()
 
     def get_chunks(self, raw_data: BeautifulSoup):

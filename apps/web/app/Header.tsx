@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 export function Header() {
@@ -46,7 +47,9 @@ export function Header() {
     <div className={navbarClasses.join(" ")}>
       <div className="flex items-center justify-between max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-4">
         <div className="flex items-center">
-          <div className="flex-shrink-0">LV</div>
+          <Link href="/">
+            <div className="flex-shrink-0">LV</div>
+          </Link>
         </div>
         <div className="hidden md:flex justify-end">
           <div className="ml-10 flex items-baseline space-x-4">

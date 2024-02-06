@@ -1,12 +1,5 @@
 {
   "name": "letsvote",
-  "private": true,
-  "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
   "devDependencies": {
     "@repo/eslint-config": "*",
     "prettier": "^3.1.1",
@@ -16,8 +9,20 @@
     "node": ">=18"
   },
   "packageManager": "npm@10.2.4",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "ai": "^2.2.33",
+    "openai": "^4.26.1",
+    "react-markdown": "^9.0.1"
+  }
 }
