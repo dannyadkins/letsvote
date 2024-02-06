@@ -84,6 +84,9 @@ class SimpleQueueManager(AbstractQueueManager):
 
     def exists(self, item):
         return item in self.queue
+    
+    def __len__(self):
+        return len(self.queue)
 
 from threading import Lock, current_thread
 from concurrent.futures import ThreadPoolExecutor
@@ -185,21 +188,25 @@ class IngestionEngine:
             logging.error(f"IngestionEngine: Encountered an error while processing {current_url} due to {e}.", exc_info=True)
             # Optionally, re-queue the URL with a delay for retrying failed operations
             # self.queue.add([(current_url, depth)], delay=60)
-    
-    def run(self, seed_url: str, start_at_depth: int = 0, max_depth: int = 10000000):
-        normalized_seed_url = self.normalize_url(seed_url)
-        self.queue.add([(normalized_seed_url, 0)])
+    def run(self, seed_urls: List[str], start_at_depth: int = 0, max_depth: int = 10000000):
+        normalized_seed_urls = [(self.normalize_url(url), 0) for url in seed_urls]
+        self.queue.add(normalized_seed_urls)
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
-            while True:
+            futures = []
+            while not all(future.done() for future in futures) or not len(self.queue) == 0:
                 queue_item = self.queue.pop()
-                if not queue_item:
+                if queue_item:
+                    current_url, depth = queue_item
+                    future = executor.submit(self.process_url, current_url, depth, start_at_depth, max_depth)
+                    futures.append(future)
+                else:
                     logging.info("IngestionEngine: Queue is empty, waiting for new URLs")
                     time.sleep(10)
                     continue
-                current_url, depth = queue_item
-                executor.submit(self.process_url, current_url, depth, start_at_depth, max_depth)
+            print("Exiting...")
 
-num_threads = 8
+
+num_threads = 1
 
 def run_for_elections():
     topics = ["Instructions for voters on how to vote in the United States election in 2024", "general educational information they should know about how the electoral process works"]
@@ -227,8 +234,71 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
     engine.run(wikipedia_url, start_at_depth=1, max_depth=2)
 
+def run_for_state_elections():
+    # all 50 states
+    for state, state_seed_urls in [
+        ("Alabama", ["https://www.sos.alabama.gov/alabama-votes"]),
+        ("Alaska", ["https://www.elections.alaska.gov/"]),
+        ("Arizona", ["https://azsos.gov/elections"]),
+        ("Arkansas", ["https://www.sos.arkansas.gov/elections"]),
+        ("California", ["https://www.sos.ca.gov/elections"]),
+        ("Colorado", ["https://www.sos.state.co.us/pubs/elections/"]),
+        ("Connecticut", ["https://portal.ct.gov/SOTS/Election-Services/Election-Services-Home-Page"]),
+        ("Delaware", ["https://elections.delaware.gov/"]),
+        ("Florida", ["https://dos.myflorida.com/elections/"]),
+        ("Georgia", ["https://georgia.gov/voting"]),
+        ("Hawaii", ["https://elections.hawaii.gov/"]),
+        ("Idaho", ["https://sos.idaho.gov/elections-division/"]),
+        ("Illinois", ["https://www.elections.il.gov/"]),
+        ("Indiana", ["https://www.in.gov/sos/elections/"]),
+        ("Iowa", ["https://sos.iowa.gov/elections/"]),
+        ("Kansas", ["https://sos.kansas.gov/elections/"]),
+        ("Kentucky", ["https://elect.ky.gov/Pages/default.aspx"]),
+        ("Louisiana", ["https://www.sos.la.gov/ElectionsAndVoting/Pages/default.aspx"]),
+        ("Maine", ["https://www.maine.gov/sos/cec/elec/"]),
+        ("Maryland", ["https://elections.maryland.gov/"]),
+        ("Massachusetts", ["https://www.sec.state.ma.us/ele/eleidx.htm"]),
+        ("Michigan", ["https://www.michigan.gov/sos/0,4670,7-127-1633---,00.html"]),
+        ("Minnesota", ["https://www.sos.state.mn.us/elections-voting/"]),
+        ("Mississippi", ["https://www.sos.ms.gov/Elections-Voting/Pages/default.aspx"]),
+        ("Missouri", ["https://www.sos.mo.gov/elections"]),
+        ("Montana", ["https://sosmt.gov/elections/"]),
+        ("Nebraska", ["https://sos.nebraska.gov/elections"]),
+        ("Nevada", ["https://www.nvsos.gov/sos/elections"]),
+        ("New Hampshire", ["https://sos.nh.gov/elections/"]),
+        ("New Jersey", ["https://www.state.nj.us/state/elections/index.shtml"]),
+        ("New Mexico", ["https://www.sos.state.nm.us/voting-and-elections/"]),
+        ("New York", ["https://www.elections.ny.gov/"]),
+        ("North Carolina", ["https://www.ncsbe.gov/"]),
+        ("North Dakota", ["https://vip.sos.nd.gov/"]),
+        ("Ohio", ["https://www.ohiosos.gov/elections/"]),
+        ("Oklahoma", ["https://www.ok.gov/elections/"]),
+        ("Oregon", ["https://sos.oregon.gov/voting-elections/Pages/default.aspx"]),
+        ("Pennsylvania", ["https://www.votespa.com/"]),
+        ("Rhode Island", ["https://elections.ri.gov/"]),
+        ("South Carolina", ["https://www.scvotes.gov/"]),
+        ("South Dakota", ["https://sdsos.gov/elections-voting/default.aspx"]),
+        ("Tennessee", ["https://sos.tn.gov/elections"]),
+        ("Texas", ["https://www.sos.state.tx.us/elections/"]),
+        ("Utah", ["https://elections.utah.gov/"]),
+        ("Vermont", ["https://sos.vermont.gov/elections/"]),
+        ("Virginia", ["https://www.elections.virginia.gov/"]),
+        ("Washington", ["https://www.sos.wa.gov/elections/"]),
+        ("West Virginia", ["https://sos.wv.gov/elections/Pages/default.aspx"]),
+        ("Wisconsin", ["https://elections.wi.gov/"]),
+        ("Wyoming", ["https://sos.wyo.gov/Elections/"])
+    ]:
+        topics = [f"Instructions for voters on how to vote in local, state, primary, or general elections in {state} in 2024", "general educational information that voters should know about how the electoral process works", f"voting in {state}"]
+        gov_regex = r".*\.gov.*"
+        relevance_checker = LLMRelevanceChecker([gov_regex], topics=topics)
+        cleaner = LLMDataCleaner(topics=topics)
+
+        engine = IngestionEngine([state, "State Elections", "2024 United States Election", "Voting"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
+        engine.run(state_seed_urls, max_depth=1)
+
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
     # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    run_for_elections()
+    # run_for_elections()
     # for voting, run on the official government websites 
+    run_for_state_elections()
