@@ -217,7 +217,7 @@ def run_for_elections():
     engine.run(["https://www.usa.gov/midterm-elections"])
 
 def run_for_nikki_haley():
-    topics = ["Nikki Haley's 2024 Presidential campaign and her political views", "Nikki Haley's tenure and track record as a politicial and concrete actions she has taken"]
+    topics = ["Nikki Haley 2024 Presidential campaign and her political views", "Nikki Haley's tenure and track record as a politicial and concrete actions she has taken"]
     relevance_checker = LLMRelevanceChecker(["https://nikkihaley\.com/.*"], topics=topics)
     cleaner = LLMDataCleaner(topics=topics)
 
@@ -225,7 +225,7 @@ def run_for_nikki_haley():
     engine.run(["https://nikkihaley.com/about/"])
 
 def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
-    topics = [f"{candidate_name}'s 2024 Presidential campaign and their political views", f"${candidate_name}'s tenure and track record as a politicial and concrete actions they have taken"]
+    topics = [f"{candidate_name} 2024 Presidential campaign and their political views", f"${candidate_name}'s tenure and track record as a politicial and concrete actions they have taken"]
     relevance_checker = LLMRelevanceChecker([
     ".*"
     ], topics=topics)
@@ -298,7 +298,7 @@ def run_for_state_elections():
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
-    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    # run_for_elections()
+    # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+    run_for_elections()
     # for voting, run on the official government websites 
     # run_for_state_elections()

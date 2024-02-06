@@ -102,12 +102,17 @@ class PrismaDatabase(AbstractDatabase):
                     columns.append(f'"{column}"')
                     upsert_columns.append(f'"{column}" = EXCLUDED."{column}"')
                     try:
-                        if column != 'index_in_doc':
+                        if (column == 'index_in_doc'):
+                            values.append(str(value))
+                        elif (column == 'embedding'):
                             # Escaping single quotes in strings to prevent syntax errors
+                            values.append(f"'{value}'")
+                        elif (column == 'topics'):
+                            formatted_list = "{" + ",".join([f'"{item}"' for item in value]) + "}"
+                            values.append(f"'{formatted_list}'")
+                        else:
                             escaped_value = str(value).replace("'", "''")
                             values.append(f"'{escaped_value}'")
-                        else:
-                            values.append(str(value))
                     except Exception as e:
                         logging.error(f"Error processing value for column '{column}' with content: '{value}'. Error: {e}")
                         continue
