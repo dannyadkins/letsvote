@@ -132,7 +132,7 @@ class IngestionEngine:
     def normalize_url(self, url: str) -> str:
         return url.strip("/").strip()
 
-    def process_url(self, current_url: str):
+    def process_url(self, current_url: str, depth: int):
         with self.lock:
             if current_url in self.visited_urls:
                 logging.info(f"IngestionEngine: {current_url} has already been visited, skipping")
@@ -140,13 +140,17 @@ class IngestionEngine:
             
             self.visited_urls[current_url] = True
 
-        logging.info(f"IngestionEngine: Processing {current_url}")
+        logging.info(f"IngestionEngine: Processing {current_url} at depth {depth}")
+
+        if depth <= 0:
+            logging.info(f"IngestionEngine: Reached max depth for {current_url}, skipping further processing")
+            return
 
         try: 
             raw_data = self.extractor.extract(current_url)
         except Exception as e:
             logging.error(f"IngestionEngine: Failed to extract data from {current_url} due to {e}. Retrying in 60 seconds.", exc_info=True)
-            self.queue.add([current_url], delay=60)
+            self.queue.add([(current_url, depth)], delay=60)
             return
     
         logging.debug(f"IngestionEngine: Extracted data from {current_url}")
@@ -207,21 +211,22 @@ class IngestionEngine:
         for url in children_urls:
             try:
                 normalized_url = self.normalize_url(url)
-                self.queue.add([normalized_url])
+                self.queue.add([(normalized_url, depth - 1)])
             except Exception as e:
                 logging.error(f"IngestionEngine: Failed to normalize or add URL {url} to the queue due to {e}.", exc_info=True)
     
-    def run(self, seed_url: str):
+    def run(self, seed_url: str, max_depth: int = 10000000):
         normalized_seed_url = self.normalize_url(seed_url)
-        self.queue.add([normalized_seed_url])
+        self.queue.add([(normalized_seed_url, max_depth)])
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
             while True:
-                current_url = self.queue.pop()
-                if not current_url:
+                queue_item = self.queue.pop()
+                if not queue_item:
                     logging.info("IngestionEngine: Queue is empty, waiting for new URLs")
                     time.sleep(10)
                     continue
-                executor.submit(self.process_url, current_url)
+                current_url, depth = queue_item
+                executor.submit(self.process_url, current_url, depth)
 
 num_threads = 16
 
@@ -250,7 +255,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run(wikipedia_url)
+    engine.run(wikipedia_url, max_depth=2)
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
