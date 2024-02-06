@@ -5,7 +5,7 @@ import os
 from typing import List
 from embed import embed 
 from prisma import Prisma
-from utils import get_uuid
+from utils import get_uuid, get_document_id, get_chunk_id
 from schema import Document, Chunk
 import logging
 
@@ -115,8 +115,8 @@ class PrismaDatabase(AbstractDatabase):
 def test_prisma_database():
     logging.debug("Testing PrismaDatabase functionality.")
     prisma_db = PrismaDatabase()
-    doc_uuid = get_uuid()
-    chunk_uuid = get_uuid()
+    doc_uuid = get_document_id("https://example.com")
+    chunk_uuid = get_chunk_id("Test Chunk")
     # Initial insert
     prisma_db.save_documents([Document(id=doc_uuid, title="Test Document", url="https://example.com", author="Test Author", date_crawled="2022-01-01", date_published="2022-01-01", topics=["2024 Election"])])
     prisma_db.save_chunks([Chunk(id=chunk_uuid, content="Test Chunk", document_id=doc_uuid, index_in_doc=0, embedding=embed("Test Chunk")[0])])

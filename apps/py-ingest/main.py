@@ -254,6 +254,6 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
-    # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    run_for_elections()
+    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+    # run_for_elections()
     # for voting, run on the official government websites 

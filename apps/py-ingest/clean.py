@@ -2,12 +2,11 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import logging
 from typing import List, Optional
-import uuid
 from bs4 import BeautifulSoup
 from llm import AbstractLLM, GPT
 from pydantic import BaseModel
 from schema import Chunk, Document 
-from utils import get_document_id
+from utils import get_document_id, get_chunk_id
 from embed import embed 
 
 # TODO: We may want to append contextual information to each chunk, which could help in lookup.
@@ -63,7 +62,7 @@ class AbstractDataCleaner(ABC):
         # embed each one with error handled, if it fails delete the chunk and continue
 
         for content in chunk_contents:
-            id = str(uuid.uuid4())
+            id = get_chunk_id(content)
             try: 
                 embedding = embed([content])[0]
             except:
@@ -111,9 +110,17 @@ class LLMDataCleaner(AbstractDataCleaner):
 
         parts = split_text(clean_text, max_tokens)
 
-        for part in parts:
+        from concurrent.futures import ThreadPoolExecutor
+
+        def generate_chunks(part):
             model_response = self.model.generate(part, response_model=CleanResponse, max_tokens=4096)
-            chunks.extend(model_response.chunks)
+            return model_response.chunks
+
+        # We can run many parallel because we are I/O bound 
+        with ThreadPoolExecutor(max_workers=len(parts)) as executor:
+            future_chunks = [executor.submit(generate_chunks, part) for part in parts]
+            for future in future_chunks:
+                chunks.extend(future.result())
         print("Chunks: ", chunks)
         return [chunk for chunk in chunks if len(chunk) > 30]
 

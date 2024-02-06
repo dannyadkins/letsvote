@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
-import uuid
+
+from utils import get_chunk_id, get_document_id
 from prisma import Prisma
 from embed import embed 
 
@@ -33,7 +34,7 @@ def test_schema():
     prisma.connect()
 
     # test document creation
-    new_document_id = str(uuid.uuid4())
+    new_document_id = get_document_id("https://example.com")
     document_insertion_query = f"""
     INSERT INTO "Document" ("id", "title", "url", "date_crawled", "date_published", "topics") 
     VALUES ('{new_document_id}', 'Test Document', 'https://example.com', '{datetime.now()}', '{datetime.now()}', '{{}}')
@@ -49,7 +50,7 @@ def test_schema():
     embedding = embed(["Test Chunk"])[0]
 
     # test chunk creation
-    new_chunk_id = str(uuid.uuid4())
+    new_chunk_id = get_chunk_id("Test Chunk")
     chunk_insertion_query = f"""
     INSERT INTO "Chunk" ("id", "content", "document_id", "index_in_doc", "embedding") 
     VALUES ('{new_chunk_id}', 'Test Chunk', '{document.id}', 0, '{embedding}')
