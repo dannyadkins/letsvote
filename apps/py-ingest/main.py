@@ -132,7 +132,7 @@ class IngestionEngine:
     def normalize_url(self, url: str) -> str:
         return url.strip("/").strip()
 
-    def process_url(self, current_url: str, depth: int):
+    def process_url(self, current_url: str, depth: int = 0, start_at_depth: int = 0, max_depth = 10000):
         with self.lock:
             if current_url in self.visited_urls:
                 logging.info(f"IngestionEngine: {current_url} has already been visited, skipping")
@@ -142,9 +142,10 @@ class IngestionEngine:
 
         logging.info(f"IngestionEngine: Processing {current_url} at depth {depth}")
 
-        if depth <= 0:
+        if depth >= max_depth:
             logging.info(f"IngestionEngine: Reached max depth for {current_url}, skipping further processing")
             return
+
 
         try: 
             raw_data = self.extractor.extract(current_url)
@@ -155,50 +156,54 @@ class IngestionEngine:
     
         logging.debug(f"IngestionEngine: Extracted data from {current_url}")
 
-        try:
-            pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
-        except Exception as e:
-            logging.error(f"IngestionEngine: Failed to clean data from {current_url} due to {e}. Skipping URL.", exc_info=True)
-            return
+        if depth >= start_at_depth:
 
-        logging.debug(f"IngestionEngine: Pre-cleaned data from {current_url}")
-
-        try:
-            if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
-                logging.info(f"IngestionEngine: {current_url} is not relevant, skipping")
+            try:
+                pre_cleaned_data = self.cleaner.get_clean_text(raw_data)
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to clean data from {current_url} due to {e}. Skipping URL.", exc_info=True)
                 return
-        except Exception as e:
-            logging.error(f"IngestionEngine: Failed to check relevance for {current_url} due to {e}. Skipping URL.", exc_info=True)
-            return
 
-        try:
-            document = self.cleaner.get_document(current_url, raw_data)
-            document.topics = self.meta_topics
-            print("Document topics: ", document)
-        except Exception as e:
-            logging.error(f"IngestionEngine: Failed to extract document from {current_url} due to {e}. Skipping URL.", exc_info=True)
-            return
+            logging.debug(f"IngestionEngine: Pre-cleaned data from {current_url}")
 
-        logging.debug(f"IngestionEngine: Extracted document from {current_url}")
+            try:
+                if not self.relevance_checker.is_relevant(current_url, pre_cleaned_data):
+                    logging.info(f"IngestionEngine: {current_url} is not relevant, skipping")
+                    return
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to check relevance for {current_url} due to {e}. Skipping URL.", exc_info=True)
+                return
 
-        try:
-            chunk_contents = self.cleaner.get_chunks(raw_data)
-            chunks = self.cleaner.enrich_chunks(chunk_contents, document)
-        except Exception as e:
-            logging.error(f"IngestionEngine: Failed to extract or enrich chunks from {current_url} due to {e}. Skipping URL.", exc_info=True)
-            return
+            try:
+                document = self.cleaner.get_document(current_url, raw_data)
+                document.topics = self.meta_topics
+                print("Document topics: ", document)
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to extract document from {current_url} due to {e}. Skipping URL.", exc_info=True)
+                return
 
-        logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
+            logging.debug(f"IngestionEngine: Extracted document from {current_url}")
 
-        try:
-            self.db.save_documents([document])
-            self.db.save_chunks(chunks)
-        except Exception as e:
-            logging.error(f"IngestionEngine: Failed to save documents or chunks for {current_url} due to {e}.", exc_info=True)
-            return
+            try:
+                chunk_contents = self.cleaner.get_chunks(raw_data)
+                chunks = self.cleaner.enrich_chunks(chunk_contents, document)
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to extract or enrich chunks from {current_url} due to {e}. Skipping URL.", exc_info=True)
+                return
 
-        logging.info(f"IngestionEngine: Saved {len(chunks)} chunks for document {document.id}")
+            logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
 
+            try:
+                self.db.save_documents([document])
+                self.db.save_chunks(chunks)
+            except Exception as e:
+                logging.error(f"IngestionEngine: Failed to save documents or chunks for {current_url} due to {e}.", exc_info=True)
+                return
+
+            logging.info(f"IngestionEngine: Saved {len(chunks)} chunks for document {document.id}")
+        else: 
+            logging.info(f"IngestionEngine: Skipping processing for {current_url} at depth {depth}")
+            
         try:
             children_urls = extract_links(current_url, raw_data)
         except Exception as e:
@@ -211,13 +216,13 @@ class IngestionEngine:
         for url in children_urls:
             try:
                 normalized_url = self.normalize_url(url)
-                self.queue.add([(normalized_url, depth - 1)])
+                self.queue.add([(normalized_url, depth + 1)])
             except Exception as e:
                 logging.error(f"IngestionEngine: Failed to normalize or add URL {url} to the queue due to {e}.", exc_info=True)
     
-    def run(self, seed_url: str, max_depth: int = 10000000):
+    def run(self, seed_url: str, start_at_depth: int = 0, max_depth: int = 10000000):
         normalized_seed_url = self.normalize_url(seed_url)
-        self.queue.add([(normalized_seed_url, max_depth)])
+        self.queue.add([(normalized_seed_url, 0)])
         with ThreadPoolExecutor(max_workers=self.num_threads) as executor:
             while True:
                 queue_item = self.queue.pop()
@@ -226,7 +231,7 @@ class IngestionEngine:
                     time.sleep(10)
                     continue
                 current_url, depth = queue_item
-                executor.submit(self.process_url, current_url, depth)
+                executor.submit(self.process_url, current_url, depth, start_at_depth, max_depth)
 
 num_threads = 16
 
@@ -255,7 +260,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run(wikipedia_url, max_depth=2)
+    engine.run(wikipedia_url, start_at_depth=1, max_depth=2)
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
