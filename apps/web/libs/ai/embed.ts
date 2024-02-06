@@ -1,4 +1,5 @@
 import prisma from "@/db";
+import { Chunk } from "@prisma/client";
 
 type EmbeddingModel =
   | "text-embedding-3-small"
@@ -28,11 +29,19 @@ export const embed = async (
   return data?.data?.[0]?.embedding;
 };
 
-export const knn = async (
+export const chunkKnn = async (
   input: { embedding?: number[]; text?: string },
-  k: number
-): Promise<{ content: string; distance: number }[]> => {
+  k: number,
+  includeDocument: boolean = false,
+  includeSurroundingChunks: boolean = false
+): Promise<
+  (Partial<Chunk & Document> & {
+    distance: number;
+    surroundingchunks?: Partial<Chunk>[];
+  })[]
+> => {
   let { embedding, text } = input;
+
   if (!embedding && !text) {
     throw new Error("Must provide either an embedding or text");
   }
@@ -41,5 +50,34 @@ export const knn = async (
     embedding = await embed(text);
   }
 
-  return await prisma.$queryRaw`SELECT content, embedding <=> ${embedding}::vector AS distance FROM "Chunk" ORDER BY distance LIMIT ${k}`;
+  if (includeDocument && includeSurroundingChunks) {
+    return await prisma.$queryRaw`
+      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance, 
+      "Document".title, "Document".url,
+      (
+        SELECT array_agg(json_build_object('content', c.content, 'indexIn_doc', c.index_in_doc)) 
+        FROM "Chunk" c 
+        WHERE c.document_id = "Chunk".document_id 
+        AND c.index_in_doc BETWEEN "Chunk".index_in_doc - 5 AND "Chunk".index_in_doc + 5 
+        AND c.id != "Chunk".id
+      ) AS surroundingChunks
+      FROM "Chunk"
+      LEFT JOIN "Document" ON "Chunk".document_id = "Document".id
+      ORDER BY distance LIMIT ${k}
+    `;
+  } else if (includeDocument) {
+    return await prisma.$queryRaw`
+      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance, 
+      "Document".title, "Document".url
+      FROM "Chunk"
+      LEFT JOIN "Document" ON "Chunk".document_id = "Document".id
+      ORDER BY distance LIMIT ${k}
+    `;
+  } else {
+    return await prisma.$queryRaw`
+      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance
+      FROM "Chunk"
+      ORDER BY distance LIMIT ${k}
+    `;
+  }
 };
