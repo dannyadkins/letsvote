@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def embed(texts: List[str], model: str = "text-embedding-ada-002") -> List[List[float]]:
+def embed(texts: List[str], model: str = "text-embedding-3-small") -> List[List[float]]:
     """
     Get embeddings for a list of texts.
 

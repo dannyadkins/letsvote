@@ -1,4 +1,6 @@
-export default function SearchPage({
+import { knn } from "@/libs/ai";
+
+export default async function SearchPage({
   params,
   searchParams,
 }: {
@@ -15,6 +17,8 @@ export default function SearchPage({
   // hydrate this page with that query,
 
   // then execute the proper prisma query
+  const reuslts = await knn({ text: "Nikki Haley's views on abortion" }, 10);
+  console.log(reuslts);
 
   return <div>{/* suspense skeleton  */}</div>;
 }

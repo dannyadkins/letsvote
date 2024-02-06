@@ -1,7 +1,5 @@
-generator py {
-  provider             = "prisma-client-py"
-  interface            = "sync"
-  recursive_type_depth = 5
+generator js {
+  provider = "prisma-client-js"
 }
 
 datasource db {
