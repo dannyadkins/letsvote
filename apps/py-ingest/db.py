@@ -93,7 +93,7 @@ class PrismaDatabase(AbstractDatabase):
             logging.debug(f"Preparing to save chunk for document ID {chunk.document_id}")
             columns = ['id']
             values = [f"'{chunk.id}'"]
-            possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding', 'surrounding_content']
+            possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding', 'surrounding_content', 'type', 'topics']
             upsert_columns = []
 
             for column in possible_columns:
@@ -101,7 +101,16 @@ class PrismaDatabase(AbstractDatabase):
                 if value is not None:
                     columns.append(f'"{column}"')
                     upsert_columns.append(f'"{column}" = EXCLUDED."{column}"')
-                    values.append(f"'{value}'" if column != 'index_in_doc' else str(value))
+                    try:
+                        if column != 'index_in_doc':
+                            # Escaping single quotes in strings to prevent syntax errors
+                            escaped_value = str(value).replace("'", "''")
+                            values.append(f"'{escaped_value}'")
+                        else:
+                            values.append(str(value))
+                    except Exception as e:
+                        logging.error(f"Error processing value for column '{column}' with content: '{value}'. Error: {e}")
+                        continue
             
             columns_str = ", ".join(columns)
             values_str = ", ".join(values)

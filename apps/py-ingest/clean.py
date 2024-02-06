@@ -54,7 +54,7 @@ class AbstractDataCleaner(ABC):
         return document
     
     # TODO: maybe link to neighbors in document 
-    def enrich_chunks(self, chunk_contents: List[str], document: Document, chunks_surrounding_contents: List[str] = []):
+    def enrich_chunks(self, chunk_contents: List[str], document: Document, chunks_surrounding_contents: List[str] = [], chunk_types: List[str] = []):
         chunks = []
         index = 0
         # generate a uuid 
@@ -71,7 +71,8 @@ class AbstractDataCleaner(ABC):
                 continue
 
             chunk_surrounding_content = chunks_surrounding_contents[index] if chunks_surrounding_contents else ""
-            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content))
+            chunk_type = chunk_types[index] if chunk_types else ""
+            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content, type=chunk_type, topics=document.topics))
             index += 1
         return chunks
             
@@ -87,7 +88,9 @@ class LLMDataCleaner(AbstractDataCleaner):
         system_prompt = "Here is some raw data that we extracted from a webpage. We want to break it up into specific chunks that are logically coherent, preserving the initial text exactly. Please provide a list of these chunks, and be precise. We do not care about headers or short strings or links to other pages, we only want actual substantive information. If it is not a FACT that will be a useful reference text, do not include it. Don't just include stuff that points to other facts without adding substantive information. Skip over short pieces of text, such as anything less than a few sentences long. We do NOT want meaningless things like `Learn about this` or `Find more here` if the actual info is not shared. DO NOT INCLUDE ANYTHING THAT DOES NOT HAVE A CONCRETE, USEFUL FACT."
         if (topics):
             system_prompt += " We ONLY care about text related to these topics, and it MUST add real information to a user's search query. You must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
-        self.model = GPT("3.5", system_prompt=system_prompt)
+        self.model = GPT("4", system_prompt=system_prompt)
+        self.topic_model = GPT("4", system_prompt="Here is a piece of information that may be coming from any source on the Internet. We want to classify whether it is PRIMARILY a direct quote from an individual (direct_quote), a paraphrase of information (paraphrase), a piece of commentary from a third party (commentary), or useful factual information that is unrelated to any commentary/agenda/subjectivity (useful_information). If none seem clearly applicable, then please return other. Please classify the information accordingly.")
+        self.max_workers = 8
         super().__init__()
 
     def get_chunks(self, raw_data: BeautifulSoup):
@@ -120,7 +123,7 @@ class LLMDataCleaner(AbstractDataCleaner):
             return model_response.chunks
 
         # We can run many parallel because we are I/O bound 
-        with ThreadPoolExecutor(max_workers=len(parts)) as executor:
+        with ThreadPoolExecutor(max_workers=min(len(parts), self.max_workers)) as executor:
             future_chunks = [executor.submit(generate_chunks, part) for part in parts]
             for future in future_chunks:
                 chunks.extend(future.result())
@@ -134,7 +137,27 @@ class LLMDataCleaner(AbstractDataCleaner):
             surrounding_content = clean_text[max(0, start_index-200):min(len(clean_text), end_index+200)]
             chunks_surrounding_contents.append(surrounding_content)
 
-        return chunks, chunks_surrounding_contents
+        class ChunkTypeResponse(BaseModel):
+            type: str
+        
+        # type can be direct_quote, paraphrase, commentary, useful_information, or other
+        # direct_quote: a direct quote from the source or person in question
+        # paraphrase: a paraphrase of the source or person in question
+
+        def generate_chunk_type(chunk):
+            model_response = self.topic_model.generate(chunk, response_model=ChunkTypeResponse, max_tokens=256)
+            return model_response.type
+
+        chunk_types = []
+
+        with ThreadPoolExecutor(max_workers=min(len(chunks), self.max_workers)) as executor:
+            future_chunk_types = [executor.submit(generate_chunk_type, chunk) for chunk in chunks]
+            for index, future in enumerate(future_chunk_types):
+                chunk_type = future.result()
+                chunk_types.append(chunk_type)
+
+
+        return chunks, chunks_surrounding_contents, chunk_types
 
         
 

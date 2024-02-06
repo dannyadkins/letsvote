@@ -26,6 +26,8 @@ class Chunk(BaseModel):
     content: str
     surrounding_content: Optional[str] = ''
     Document: Optional[Document] = None
+    topics: List[str] = []
+    type: Optional[str] = None
 
 Document.update_forward_refs()
 

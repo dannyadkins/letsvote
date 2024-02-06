@@ -28,4 +28,6 @@ model Chunk {
   Document     Document? @relation(fields: [document_id], references: [id], name: "DocumentChunks")
   content      String
   surrounding_content String?
+  topics       String[]
+  type         String
 }
