@@ -24,6 +24,7 @@ class Chunk(BaseModel):
     index_in_doc: int
     embedding: Optional[List[float]] = None
     content: str
+    surrounding_content: Optional[str] = ''
     Document: Optional[Document] = None
 
 Document.update_forward_refs()

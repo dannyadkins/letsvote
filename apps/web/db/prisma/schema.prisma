@@ -1,5 +1,7 @@
-generator js {
-  provider = "prisma-client-js"
+generator py {
+  provider             = "prisma-client-py"
+  interface            = "sync"
+  recursive_type_depth = 5
 }
 
 datasource db {
@@ -25,4 +27,5 @@ model Chunk {
   embedding    Unsupported("vector(1536)")?
   Document     Document? @relation(fields: [document_id], references: [id], name: "DocumentChunks")
   content      String
+  surrounding_content String?
 }

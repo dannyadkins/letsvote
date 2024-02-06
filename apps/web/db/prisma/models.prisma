@@ -21,4 +21,5 @@ model Chunk {
   embedding    Unsupported("vector(1536)")?
   Document     Document? @relation(fields: [document_id], references: [id], name: "DocumentChunks")
   content      String
+  surrounding_content String?
 }

@@ -163,8 +163,8 @@ class IngestionEngine:
                 print("Document topics: ", document)
                 logging.debug(f"IngestionEngine: Extracted document from {current_url}")
 
-                chunk_contents = self.cleaner.get_chunks(raw_data)
-                chunks = self.cleaner.enrich_chunks(chunk_contents, document)
+                chunk_contents, chunk_surrounding_contents = self.cleaner.get_chunks(raw_data)
+                chunks = self.cleaner.enrich_chunks(chunk_contents, document, chunk_surrounding_contents)
                 logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
 
                 self.db.save_documents([document])
@@ -229,6 +229,6 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
-    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    # run_for_elections()
+    # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+    run_for_elections()
     # for voting, run on the official government websites 

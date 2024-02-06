@@ -93,7 +93,7 @@ class PrismaDatabase(AbstractDatabase):
             logging.debug(f"Preparing to save chunk for document ID {chunk.document_id}")
             columns = ['id']
             values = [f"'{chunk.id}'"]
-            possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding']
+            possible_columns = ['content', 'document_id', 'index_in_doc', 'embedding', 'surrounding_content']
             upsert_columns = []
 
             for column in possible_columns:

@@ -54,7 +54,7 @@ class AbstractDataCleaner(ABC):
         return document
     
     # TODO: maybe link to neighbors in document 
-    def enrich_chunks(self, chunk_contents: List[str], document: Document):
+    def enrich_chunks(self, chunk_contents: List[str], document: Document, chunks_surrounding_contents: List[str] = []):
         chunks = []
         index = 0
         # generate a uuid 
@@ -68,7 +68,9 @@ class AbstractDataCleaner(ABC):
             except:
                 logging.info(f"Failed to embed chunk with content: {content}")
                 continue
-            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding))
+
+            chunk_surrounding_content = chunks_surrounding_contents[index] if chunks_surrounding_contents else ""
+            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content))
             index += 1
         return chunks
             
@@ -121,8 +123,17 @@ class LLMDataCleaner(AbstractDataCleaner):
             future_chunks = [executor.submit(generate_chunks, part) for part in parts]
             for future in future_chunks:
                 chunks.extend(future.result())
-        print("Chunks: ", chunks)
-        return [chunk for chunk in chunks if len(chunk) > 30]
+        
+        chunks =  [chunk for chunk in chunks if len(chunk) > 30]
+        # for each chunk, get surrounding_content which is the ~200 characters before and after the chunk
+        chunks_surrounding_contents = []
+        for content in chunks:
+            start_index = clean_text.find(content)
+            end_index = start_index + len(content)
+            surrounding_content = clean_text[max(0, start_index-200):min(len(clean_text), end_index+200)]
+            chunks_surrounding_contents.append(surrounding_content)
+
+        return chunks, chunks_surrounding_contents
 
         
 
