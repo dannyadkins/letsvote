@@ -10,6 +10,7 @@ import { ClientGeneration } from "@/components/atoms/ClientGeneration";
 import { chunkKnn } from "@/libs/ai";
 import { constructSearchPrompt } from "@/libs/ai/prompts";
 import { Chunk } from "@prisma/client";
+import { SourcesCarousel } from "./SourcesCarousel";
 
 export default async function SearchPage({
   params,
@@ -60,39 +61,10 @@ export default async function SearchPage({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 w-full">
       <h3 className="">{searchQuery}</h3>
 
-      <Carousel
-        opts={{
-          align: "start",
-        }}
-        className="w-full"
-      >
-        <CarouselPrevious />
-
-        <CarouselContent className="p-3">
-          {chunks.map((chunk, index) => {
-            return (
-              <CarouselItem key={index} className="basis-1/3">
-                <a href={chunk.url} target="_blank" rel="noopener noreferrer">
-                  <Card
-                    key={chunk.id}
-                    className=" cursor-pointer bg-beige-50 rounded-lg p-4 flex flex-col gap-2 hover:shadow-md transition duration-200 ease-in-out relative transform hover:translate-y-[-0.5rem] text-xs"
-                  >
-                    <code className="truncate">{chunk.title}</code>
-                    <div className="text-xs p-0 w-full overflow-hidden">
-                      <p className="line-clamp-4">{chunk.content}</p>
-                    </div>
-                    <a className="text-xs truncate opacity-50">{chunk.url}</a>
-                  </Card>
-                </a>
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-        <CarouselNext />
-      </Carousel>
+      <SourcesCarousel chunks={chunks} />
     </div>
   );
 }
