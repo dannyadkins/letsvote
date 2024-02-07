@@ -301,7 +301,8 @@ if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
     # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
     # run_for_candidate_wikipedia("Joe Biden", "https://en.wikipedia.org/wiki/Joe_Biden")
-    run_for_candidate_wikipedia("Robert F. Kennedy Jr.", "https://en.wikipedia.org/wiki/Robert_F._Kennedy_Jr.")
+    # run_for_candidate_wikipedia("Robert F. Kennedy Jr.", "https://en.wikipedia.org/wiki/Robert_F._Kennedy_Jr.")
+    run_for_candidate_wikipedia("Dean Phillips", "https://en.wikipedia.org/wiki/Dean_Phillips")
 
     # run_for_elections()
     # for voting, run on the official government websites 

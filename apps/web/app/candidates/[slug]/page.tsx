@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Badge } from "@/components/atoms/Badge";
 import {
   Card,
@@ -5,18 +7,13 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/atoms/Card";
-import { DataTable } from "@/components/molecules/DataTable/DataTable";
-import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
-import prisma from "@/db";
-import { chunkKnn } from "@/libs/ai";
-import { ChunkTypes, canididates } from "@/libs/candidates";
+import { canididates } from "@/libs/candidates";
 import Image from "next/image";
 import {
   CandidateSourcesTable,
   CandidateSourcesTableSkeleton,
 } from "./CandidateSourcesTable";
 import { Suspense } from "react";
-import { Skeleton } from "@/components/atoms/Skeleton";
 
 export default async function CandidatePage({
   params,

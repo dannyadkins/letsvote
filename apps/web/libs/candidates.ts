@@ -166,4 +166,12 @@ export const canididates: ICandidate[] = [
       },
     ],
   },
+  {
+    name: "Robert F. Kennedy Jr.",
+    slug: "rfk-jr",
+    image: "/candidates/nikki-haley.webp",
+    party: "Independent",
+    race: RacesByName.President,
+    links: [],
+  },
 ];

@@ -11,9 +11,9 @@ export const CandidateSourcesTable = async ({
   candidate: any;
   searchParams: any;
 }) => {
-  try {
-    let quotes;
+  let quotes = [];
 
+  try {
     if (searchParams.softTextSearch) {
       quotes = await chunkKnn(
         { text: searchParams.softTextSearch as string },

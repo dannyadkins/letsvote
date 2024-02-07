@@ -12,4 +12,4 @@ SCHEMA_PATH="$SCRIPT_DIR/prisma/schema.prisma"
 
 cat "$SCRIPT_DIR/prisma/$LANGUAGE.prisma" "$SCRIPT_DIR/prisma/models.prisma" > $SCHEMA_PATH
 
-npx prisma@5.8.0 generate --schema=$SCHEMA_PATH
+npx prisma@5.8.1 generate --schema=$SCHEMA_PATH
