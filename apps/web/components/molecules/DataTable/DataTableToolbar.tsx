@@ -3,9 +3,9 @@
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Table } from "@tanstack/react-table";
 
-import { DataTableViewOptions } from "@/app/examples/tasks/components/data-table-view-options";
+import { DataTableViewOptions } from "@/components/molecules/DataTable/DataTableViewOptions";
 
-import { priorities, statuses } from "../data/data";
+// import { priorities, statuses } from "../data/data";
 
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 import { Input } from "@/components/atoms/Input";
@@ -19,7 +19,8 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
-
+  const priorities = [];
+  const statuses = [];
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
