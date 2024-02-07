@@ -133,4 +133,26 @@ export const canididates: ICandidate[] = [
       },
     ],
   },
+  {
+    name: "Nikki Haley",
+    slug: "nikki-haley",
+    race: RacesByName.President,
+    party: "Republican",
+    links: [
+      {
+        href: "https://en.wikipedia.org/wiki/Nikki_Haley",
+        title: "Wikipedia",
+        type: "wikipedia",
+      },
+      {
+        href: "https://www.nikkihaley.com",
+        title: "Official Website",
+        type: "official",
+      },
+      {
+        href: "https://twitter.com/NikkiHaley",
+        type: "twitter",
+      },
+    ],
+  },
 ];

@@ -10,6 +10,9 @@ import { DataTableViewOptions } from "@/components/molecules/DataTable/DataTable
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 import { Input } from "@/components/atoms/Input";
 import { Button } from "@/components/atoms/Button";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Checkbox } from "@/components/atoms/Checkbox";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -19,19 +22,61 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
-  const priorities = [];
-  const statuses = [];
+  const priorities: any[] = [];
+  const statuses: any[] = [];
+
+  const [tableFilterValue, setTableFilterValue] = useState("");
+  const [debouncedValue, setDebouncedValue] = useState(tableFilterValue);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [useExactSearch, setUseExactSearch] = useState(false);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(tableFilterValue);
+    }, 600); // Debounce delay of 300ms
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [tableFilterValue]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (useExactSearch) {
+      params.set("filter", debouncedValue);
+      params.delete("softTextSearch");
+    } else {
+      params.set("softTextSearch", debouncedValue);
+      params.delete("filter");
+    }
+    window.history.pushState(null, "", `?${params.toString()}`);
+    router.refresh();
+  }, [debouncedValue, useExactSearch]);
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Filter sources..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
+          value={tableFilterValue}
+          onChange={(event) => setTableFilterValue(event.target.value)}
           className="h-8 w-[150px] lg:w-[250px]"
         />
+        <div className="items-center flex px-2">
+          <Checkbox
+            id="useExactSearch"
+            checked={useExactSearch}
+            onCheckedChange={(checked) => setUseExactSearch(checked === true)}
+            className="mr-2"
+          />
+          <label
+            htmlFor="useExactSearch"
+            className="text-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Search for exact text match
+          </label>
+        </div>
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}

@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
+import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
 import prisma from "@/db";
+import { chunkKnn } from "@/libs/ai";
 import { ChunkTypes, canididates } from "@/libs/candidates";
 
 export default async function CandidatePage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const candidate = canididates.find(
     (candidate) => candidate.slug === params.slug
@@ -15,22 +19,41 @@ export default async function CandidatePage({
   if (!candidate) {
     throw new Error("Candidate not found");
   }
-  const quotes = await prisma.chunk.findMany({
-    where: {
-      topics: {
-        has: candidate.name + " 2024 Presidential Campaign",
+
+  let quotes;
+  if (searchParams.softTextSearch) {
+    quotes = await chunkKnn(
+      { text: searchParams.softTextSearch as string },
+      25,
+      true,
+      false
+    );
+  } else {
+    quotes = await prisma.chunk.findMany({
+      where: {
+        topics: {
+          has: candidate.name + " 2024 Presidential Campaign",
+        },
+        type: ChunkTypes.DirectQuote,
+        ...(searchParams.filter && {
+          content: {
+            contains: searchParams.filter as string,
+          },
+        }),
       },
-      type: ChunkTypes.DirectQuote,
-    },
-    take: 25,
-    include: {
-      Document: true,
-    },
+      take: 25,
+      include: {
+        Document: true,
+      },
+    });
+  }
+
+  quotes = quotes.map((chunk) => {
+    return {
+      ...(chunk.Document || {}),
+      ...chunk,
+    };
   });
-
-  console.log(quotes);
-
-  // TODO add pagination
 
   return (
     <div className="py-4 px-8">
@@ -38,41 +61,12 @@ export default async function CandidatePage({
         <CardHeader>{candidate.name}</CardHeader>
         <CardContent></CardContent>
       </Card>
-
       <Card>
         <CardHeader size={4}>Explore sources</CardHeader>
         <CardContent>
-          <div>
-            <DataTable
-              columns={[
-                {
-                  accessorKey: "content",
-                  header: "Quote",
-                },
-                {
-                  accessorKey: "title",
-                  header: "Source",
-                },
-                {
-                  accessorKey: "url",
-                  header: "URL",
-                },
-              ]}
-              data={quotes.map((quote) => ({
-                content: quote.content,
-                url: quote.Document?.url,
-                title: quote.Document?.title,
-              }))}
-            />
-          </div>
+          <SourcesTable sources={quotes} />
         </CardContent>
       </Card>
-      <div className="bg-beige-50 rounded-xl shadow-lg p-4">
-        Quotes
-        {quotes.map((quote) => {
-          return <div key={quote.id}>{quote.content}</div>;
-        })}
-      </div>
     </div>
   );
 }

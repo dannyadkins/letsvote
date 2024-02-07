@@ -232,7 +232,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run([wikipedia_url], start_at_depth=0, max_depth=3)
+    engine.run([wikipedia_url], start_at_depth=0, max_depth=2)
 
 def run_for_state_elections():
     # all 50 states
@@ -299,8 +299,8 @@ def run_for_state_elections():
 
 if __name__ == "__main__":
     # we should run for every candidate, on their website+Twitter+Wikipedia+news articles
-    # run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
-    run_for_candidate_wikipedia("Joe Biden", "https://en.wikipedia.org/wiki/Joe_Biden")
+    run_for_candidate_wikipedia("Nikki Haley", "https://en.wikipedia.org/wiki/Nikki_Haley")
+    # run_for_candidate_wikipedia("Joe Biden", "https://en.wikipedia.org/wiki/Joe_Biden")
 
     # run_for_elections()
     # for voting, run on the official government websites 
