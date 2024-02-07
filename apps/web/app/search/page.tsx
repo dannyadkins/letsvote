@@ -37,7 +37,7 @@ export default async function SearchPage({
       distance: number;
       surroundingchunks?: Partial<Chunk>[];
     }
-  >[] = await chunkKnn({ text: searchQuery }, 10, true, false);
+  >[] = await chunkKnn({ text: searchQuery }, 10);
 
   // related pages from sitemap
 

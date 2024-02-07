@@ -25,8 +25,7 @@ export default async function CandidatePage({
     quotes = await chunkKnn(
       { text: searchParams.softTextSearch as string },
       25,
-      true,
-      false
+      "Candidates"
     );
   } else {
     quotes = await prisma.chunk.findMany({

@@ -16,8 +16,6 @@ const playfair = Playfair_Display({
   variable: "--font-serif",
 });
 
-console.log("Geist varibale: ", GeistSans.variable);
-
 export default function RootLayout({
   children,
 }: Readonly<{

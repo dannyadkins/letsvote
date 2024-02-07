@@ -1,5 +1,5 @@
 import prisma from "@/db";
-import { Chunk } from "@prisma/client";
+import { Chunk, Prisma } from "@prisma/client";
 
 type EmbeddingModel =
   | "text-embedding-3-small"
@@ -32,8 +32,7 @@ export const embed = async (
 export const chunkKnn = async (
   input: { embedding?: number[]; text?: string },
   k: number,
-  includeDocument: boolean = false,
-  includeSurroundingChunks: boolean = false
+  topic: string = "Candidates"
 ): Promise<
   (Partial<Chunk & Document> & {
     distance: number;
@@ -50,34 +49,13 @@ export const chunkKnn = async (
     embedding = await embed(text);
   }
 
-  if (includeDocument && includeSurroundingChunks) {
-    return await prisma.$queryRaw`
-      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance, 
-      "Document".title, "Document".url,
-      (
-        SELECT array_agg(json_build_object('content', c.content, 'indexIn_doc', c.index_in_doc)) 
-        FROM "Chunk" c 
-        WHERE c.document_id = "Chunk".document_id 
-        AND c.index_in_doc BETWEEN "Chunk".index_in_doc - 5 AND "Chunk".index_in_doc + 5 
-        AND c.id != "Chunk".id
-      ) AS surroundingChunks
-      FROM "Chunk"
-      LEFT JOIN "Document" ON "Chunk".document_id = "Document".id
-      ORDER BY distance LIMIT ${k}
-    `;
-  } else if (includeDocument) {
-    return await prisma.$queryRaw`
-      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance, 
+  const sql = `
+      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> $1::vector AS distance, 
       "Document".title, "Document".url
       FROM "Chunk"
       LEFT JOIN "Document" ON "Chunk".document_id = "Document".id
-      ORDER BY distance LIMIT ${k}
+      ORDER BY distance LIMIT $3
     `;
-  } else {
-    return await prisma.$queryRaw`
-      SELECT "Chunk".id, "Chunk".content, "Chunk".index_in_doc AS indexInDoc, "Chunk".embedding <=> ${embedding}::vector AS distance
-      FROM "Chunk"
-      ORDER BY distance LIMIT ${k}
-    `;
-  }
+
+  return await prisma.$queryRawUnsafe(sql, embedding, topic, k);
 };

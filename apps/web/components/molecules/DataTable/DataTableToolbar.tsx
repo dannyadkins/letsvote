@@ -30,7 +30,7 @@ export function DataTableToolbar<TData>({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [useExactSearch, setUseExactSearch] = useState(false);
+  const [useExactSearch, setUseExactSearch] = useState(true);
 
   useEffect(() => {
     const handler = setTimeout(() => {
