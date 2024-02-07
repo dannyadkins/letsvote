@@ -19,10 +19,11 @@ Card.displayName = "Card";
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { size?: number | string }
->(({ className, size = 1, ...props }, ref) => {
+>(({ className, size = 2, ...props }, ref) => {
   const Tag = typeof size === "number" ? `h${size}` : size;
   return (
     <Tag
+      // @ts-ignore
       ref={ref}
       className={classNames("flex flex-col space-y-1.5 p-6", className)}
       {...props}
