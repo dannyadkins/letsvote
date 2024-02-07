@@ -166,8 +166,8 @@ class IngestionEngine:
                 print("Document topics: ", document)
                 logging.debug(f"IngestionEngine: Extracted document from {current_url}")
 
-                chunk_contents, chunk_surrounding_contents, chunk_types = self.cleaner.get_chunks(raw_data)
-                chunks = self.cleaner.enrich_chunks(chunk_contents, document, chunk_surrounding_contents, chunk_types)
+                chunk_contents, chunk_surrounding_contents, chunk_extra_info = self.cleaner.get_chunks(raw_data)
+                chunks = self.cleaner.enrich_chunks(chunk_contents, document, chunk_surrounding_contents, chunk_extra_info)
                 logging.debug(f"IngestionEngine: Extracted {len(chunks)} chunks from {current_url}")
 
                 self.db.save_documents([document])
@@ -232,7 +232,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run([wikipedia_url], start_at_depth=0, max_depth=3)
+    engine.run([wikipedia_url], start_at_depth=1, max_depth=3)
 
 def run_for_state_elections():
     # all 50 states

@@ -35,6 +35,8 @@ const config: Config = {
           "900": "#393b40",
           "950": "#1d1e21",
         },
+        card: "#fefdfb",
+        muted: "#f5f6f6",
       },
       fontFamily: {
         sans: ["var(--font-inter)"],

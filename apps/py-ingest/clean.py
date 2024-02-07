@@ -54,7 +54,7 @@ class AbstractDataCleaner(ABC):
         return document
     
     # TODO: maybe link to neighbors in document 
-    def enrich_chunks(self, chunk_contents: List[str], document: Document, chunks_surrounding_contents: List[str] = [], chunk_types: List[str] = []):
+    def enrich_chunks(self, chunk_contents: List[str], document: Document, chunks_surrounding_contents: List[str] = [], chunk_extra_info: List[dict] = []):
         chunks = []
         index = 0
         # generate a uuid 
@@ -71,8 +71,8 @@ class AbstractDataCleaner(ABC):
                 continue
 
             chunk_surrounding_content = chunks_surrounding_contents[index] if chunks_surrounding_contents else ""
-            chunk_type = chunk_types[index] if chunk_types else ""
-            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content, type=chunk_type, topics=document.topics))
+            this_chunk_extra_info  = chunk_extra_info[index] if chunk_extra_info else {"type": "other", "subtopics": []}
+            chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content, type=this_chunk_extra_info['type'], topics=this_chunk_extra_info['subtopics']+document.topics))
             index += 1
         return chunks
             
@@ -89,7 +89,14 @@ class LLMDataCleaner(AbstractDataCleaner):
         if (topics):
             system_prompt += " We ONLY care about text related to these topics, and it MUST add real information to a user's search query. You must ignore the rest so we don't look at any irrelevant information: " + ",".join(topics)
         self.model = GPT("4", system_prompt=system_prompt)
-        self.topic_model = GPT("4", system_prompt="Here is a piece of information that may be coming from any source on the Internet. We want to classify whether it is PRIMARILY a direct quote from an individual (direct_quote), a paraphrase of information (paraphrase), a piece of commentary from a third party (commentary), or useful factual information that is unrelated to any commentary/agenda/subjectivity (useful_information). If none seem clearly applicable, then please return other. Please classify the information accordingly.")
+        self.topic_model = GPT("4", system_prompt="""Here is a piece of information that may be coming from any source on the Internet. 
+                               
+                               We are interested in these topics:"""
+                            + ", ".join(topics) + """
+                               
+                               For `type`, we want to classify whether it is PRIMARILY a direct quote from the individual that is the main topic such as if the topic is Joe Biden's presidency and the quote is coming from Joe Biden (direct_quote), a third party quote relating to the primary subject (third_party_quote), a paraphrase of information (paraphrase), a piece of commentary or opinion from a third party (commentary), or useful factual information that is unrelated to any commentary/agenda/subjectivity (useful_information). If none seem clearly applicable, then please return other. Please classify the information accordingly.
+                               
+                               For `subtopics`, we want to classify at most 1-2 and optionally zero "subtopics" that the piece of information is about. For example, a piece of text may be about "abortion", "climate", "democracy", "lgbt", "foreign policy", "economy", "war", etc. Make your topic names short and succinct.""")
         self.max_workers = 8
         super().__init__()
 
@@ -139,6 +146,7 @@ class LLMDataCleaner(AbstractDataCleaner):
 
         class ChunkTypeResponse(BaseModel):
             type: str
+            subtopics: Optional[List[str]] = []
         
         # type can be direct_quote, paraphrase, commentary, useful_information, or other
         # direct_quote: a direct quote from the source or person in question
@@ -146,18 +154,18 @@ class LLMDataCleaner(AbstractDataCleaner):
 
         def generate_chunk_type(chunk):
             model_response = self.topic_model.generate(chunk, response_model=ChunkTypeResponse, max_tokens=256)
-            return model_response.type
+            return model_response.type, model_response.subtopics
 
-        chunk_types = []
+        chunk_extra_info = []
 
         with ThreadPoolExecutor(max_workers=min(len(chunks), self.max_workers)) as executor:
             future_chunk_types = [executor.submit(generate_chunk_type, chunk) for chunk in chunks]
             for index, future in enumerate(future_chunk_types):
-                chunk_type = future.result()
-                chunk_types.append(chunk_type)
+                chunk_type, chunk_subtopics = future.result()
+                chunk_extra_info.append({"type": chunk_type, "subtopics": chunk_subtopics})
 
 
-        return chunks, chunks_surrounding_contents, chunk_types
+        return chunks, chunks_surrounding_contents, chunk_extra_info
 
         
 

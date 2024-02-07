@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
-import "./globals.css";
+import "./globals.scss";
 import classNames from "classnames";
 import { Header } from "@/app/Header";
 import { GeistSans } from "geist/font/sans";
