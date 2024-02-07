@@ -49,22 +49,25 @@ export default async function SearchPage({
   >[] = await chunkKnn({ text: searchQuery }, 10);
 
   // related pages from sitemap
-  {
-    /* <ClientGeneration
-        useMarkdown={true}
-        messages={constructSearchPrompt(
-          searchQuery,
-          chunks,
-          "speak to a phd level student"
-        )}
-      /> */
-  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
       <h3 className="">{searchQuery}</h3>
 
       <SourcesCarousel chunks={chunks} />
+      <Card>
+        <CardHeader size={4}>Answer</CardHeader>
+        <CardContent>
+          <ClientGeneration
+            useMarkdown={true}
+            messages={constructSearchPrompt(
+              searchQuery,
+              chunks,
+              "speak to a phd level student"
+            )}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
