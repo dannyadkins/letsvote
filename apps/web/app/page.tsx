@@ -15,7 +15,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 0.25, y: 0 }}
           transition={{ duration: 1 }}
-          className=" h-[600px]"
+          className=" h-[600px] select-none"
         >
           <Image
             src="/globe_outline_transparent.png"
