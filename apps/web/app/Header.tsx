@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+import { Castle } from "lucide-react";
 export function Header() {
   // a sticky header that turns into white bg when you scroll down, has high z index, has a logo, and has a list of links that collapse
 
@@ -45,10 +46,12 @@ export function Header() {
 
   return (
     <div className={navbarClasses.join(" ")}>
-      <div className="flex items-center justify-between max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-4">
+      <div className="flex items-center justify-between max-w-full mx-auto px-4 py-2 sm:px-6 lg:px-4">
         <div className="flex items-center">
           <Link href="/">
-            <div className="flex-shrink-0">LV</div>
+            <div className="flex-shrink-0">
+              <Castle />
+            </div>
           </Link>
         </div>
         <div className="hidden md:flex justify-end">

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { SearchBar } from "../components/organisms/SearchBar";
 import { ArrowLink } from "@/components/atoms/ArrowLink";
 import { canididates } from "@/libs/candidates";
+import { Card, CardContent } from "@/components/atoms/Card";
 
 export default function Home() {
   return (
@@ -46,7 +47,7 @@ export default function Home() {
         </MotionDivWrapper>
         <SearchBar />
       </div>
-      <div className="bg-beige-50 w-full flex flex-col flex-grow items-center min-h-[800px] p-8 shadow-lg rounded-xl">
+      <Card className="w-full p-8 flex flex-col items-center min-h-[800px] ">
         <p className="caption">AGGREGATED FROM</p>
 
         <div className="flex flex-col w-full items-start">
@@ -69,7 +70,7 @@ export default function Home() {
           </div>
           <h2> Ask questions </h2>
         </div>
-      </div>
+      </Card>
     </main>
   );
 }
