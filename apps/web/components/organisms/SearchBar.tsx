@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/Input";
 import { useState, KeyboardEvent, useRef } from "react";
 import Link from "next/link";
+import { ArrowUpIcon } from "@radix-ui/react-icons";
+import classNames from "classnames";
 
 const SUGGESTED_SEARCHES = [
   "What are Nikki Haley's views on foreign policy?",
@@ -34,7 +36,7 @@ export const SearchBar = ({ className, ...props }: any) => {
   };
 
   return (
-    <div className="max-w-full w-[500px]">
+    <div className="max-w-full w-[500px] relative">
       <Input
         type="text"
         placeholder="Enter a search"
@@ -65,6 +67,15 @@ export const SearchBar = ({ className, ...props }: any) => {
           ))}
         </div>
       )}
+      <div className="absolute top-0 right-0 h-[100%] flex flex-row items-center w-[28px]">
+        <ArrowUpIcon
+          color="#999999"
+          className={classNames(
+            "h-4 w-4 transition-opacity duration-200 ease-in-out",
+            inputValue?.length > 0 ? "opacity-100" : "opacity-50"
+          )}
+        />
+      </div>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
+import { Skeleton } from "@/components/atoms/Skeleton";
 import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
 import prisma from "@/db";
 import { chunkKnn } from "@/libs/ai";
@@ -72,6 +73,9 @@ export const CandidateSourcesTableSkeleton = () => {
   return (
     <Card>
       <CardHeader size={4}>Explore sources</CardHeader>
+      <div className="flex flex-col gap-2 p-8 mt-4">
+        <Skeleton count={12} className="rounded-lg h-[80px]" />
+      </div>
     </Card>
   );
 };
