@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
-import { DataTableToolbar } from "@/components/molecules/DataTable/DataTableToolbar";
 import prisma from "@/db";
 import { ChunkTypes, canididates } from "@/libs/candidates";
 
@@ -24,9 +23,14 @@ export default async function CandidatePage({
       type: ChunkTypes.DirectQuote,
     },
     take: 25,
+    include: {
+      Document: true,
+    },
   });
 
-  console.log("Quotes: ", quotes);
+  console.log(quotes);
+
+  // TODO add pagination
 
   return (
     <div className="py-4 px-8">
@@ -36,27 +40,31 @@ export default async function CandidatePage({
       </Card>
 
       <Card>
-        <CardHeader>
-          <h4>Explore sources</h4>
-        </CardHeader>
+        <CardHeader size={4}>Explore sources</CardHeader>
         <CardContent>
-          <DataTableToolbar />
-          <DataTable
-            columns={[
-              {
-                accessorKey: "content",
-                header: "Quote",
-              },
-              {
-                accessorKey: "source",
-                header: "Source",
-              },
-            ]}
-            data={quotes.map((quote) => ({
-              content: quote.content,
-              // source: quote.url,
-            }))}
-          />
+          <div>
+            <DataTable
+              columns={[
+                {
+                  accessorKey: "content",
+                  header: "Quote",
+                },
+                {
+                  accessorKey: "title",
+                  header: "Source",
+                },
+                {
+                  accessorKey: "url",
+                  header: "URL",
+                },
+              ]}
+              data={quotes.map((quote) => ({
+                content: quote.content,
+                url: quote.Document?.url,
+                title: quote.Document?.title,
+              }))}
+            />
+          </div>
         </CardContent>
       </Card>
       <div className="bg-beige-50 rounded-xl shadow-lg p-4">
