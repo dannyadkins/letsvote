@@ -53,7 +53,11 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
           {messages &&
             messages
               .filter((m) => m.role === "assistant")
-              .map((m) => <Markdown key={m.id}>{m.content}</Markdown>)}
+              .map((m) => (
+                <Markdown key={m.id} className={"markdown"}>
+                  {m.content}
+                </Markdown>
+              ))}
         </>
       ) : (
         <div>
