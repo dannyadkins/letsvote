@@ -61,7 +61,6 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
         </>
       ) : (
         <div>
-          Generating:{" "}
           {messages &&
             messages
               .filter((m) => m.role === "assistant")
