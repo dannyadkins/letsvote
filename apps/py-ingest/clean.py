@@ -71,7 +71,9 @@ class AbstractDataCleaner(ABC):
                 continue
 
             chunk_surrounding_content = chunks_surrounding_contents[index] if chunks_surrounding_contents else ""
-            this_chunk_extra_info  = chunk_extra_info[index] if chunk_extra_info else {"type": "other", "subtopics": []}
+            this_chunk_extra_info  = chunk_extra_info[index] if (chunk_extra_info and  chunk_extra_info[index]) else {"type": "other", "subtopics": []}
+            if (not this_chunk_extra_info['subtopics'] or len(this_chunk_extra_info['subtopics']) == 0):
+                this_chunk_extra_info['subtopics'] = []
             chunks.append(Chunk(id=id, document_id=document.id, content=content, index_in_doc=index, embedding=embedding, surrounding_content=chunk_surrounding_content, type=this_chunk_extra_info['type'], topics=this_chunk_extra_info['subtopics']+document.topics))
             index += 1
         return chunks

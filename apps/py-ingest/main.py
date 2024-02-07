@@ -232,7 +232,7 @@ def run_for_candidate_wikipedia(candidate_name, wikipedia_url):
     cleaner = LLMDataCleaner(topics=topics)
 
     engine = IngestionEngine([f"{candidate_name} 2024 Presidential Campaign", "Candidates", "Wikipedia"], SimpleDataExtractor(), cleaner=cleaner, relevance_checker=relevance_checker, db=PrismaDatabase(), queue=SimpleQueueManager(), num_threads=num_threads)
-    engine.run([wikipedia_url], start_at_depth=1, max_depth=3)
+    engine.run([wikipedia_url], start_at_depth=0, max_depth=3)
 
 def run_for_state_elections():
     # all 50 states
