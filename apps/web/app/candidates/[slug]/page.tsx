@@ -35,15 +35,19 @@ export default async function CandidatePage({
       <div className="flex flex-row gap-8">
         <Card className="w-[360px]">
           <CardHeader>{candidate.name}</CardHeader>
-          <CardContent className="relative flex flex-col gap-2">
-            <Image
-              src={candidate.image}
-              alt={candidate.name}
-              height={240}
-              width={340}
-              layout="crop"
-              className="rounded-lg"
-            />
+          <CardContent className="h-[300px] px-6">
+            <div className="w-full relative h-full rounded-xl">
+              <Image
+                src={candidate.image}
+                alt={candidate.name}
+                fill
+                style={{
+                  objectFit: "contain",
+                  borderRadius: "8px",
+                }}
+                className="rounded-lg"
+              />
+            </div>
           </CardContent>
           <CardFooter>
             {candidate.party && <Badge>{candidate.party}</Badge>}
