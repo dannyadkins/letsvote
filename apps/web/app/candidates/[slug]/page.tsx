@@ -1,9 +1,16 @@
-import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
+import { Badge } from "@/components/atoms/Badge";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/atoms/Card";
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
 import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
 import prisma from "@/db";
 import { chunkKnn } from "@/libs/ai";
 import { ChunkTypes, canididates } from "@/libs/candidates";
+import Image from "next/image";
 
 export default async function CandidatePage({
   params,
@@ -55,11 +62,26 @@ export default async function CandidatePage({
   });
 
   return (
-    <div className="py-4 px-8">
-      <Card>
-        <CardHeader>{candidate.name}</CardHeader>
-        <CardContent></CardContent>
-      </Card>
+    <div className="py-4 px-8 flex flex-col gap-8">
+      <div className="flex flex-row gap-8">
+        <Card className="w-[360px]">
+          <CardHeader>{candidate.name}</CardHeader>
+          <CardContent className="relative flex flex-col gap-2">
+            <Image
+              src={candidate.image}
+              alt={candidate.name}
+              height={240}
+              width={340}
+              layout="responsive"
+              className="rounded-lg"
+            />
+          </CardContent>
+          <CardFooter>
+            {candidate.party && <Badge>{candidate.party}</Badge>}
+          </CardFooter>
+        </Card>
+        <Card>On the issues</Card>
+      </div>
       <Card>
         <CardHeader size={4}>Explore sources</CardHeader>
         <CardContent>

@@ -74,6 +74,7 @@ interface ICandidate {
   race: IRace;
   party: "Democrat" | "Republican" | "Libertarian" | "Green" | "Independent";
   links: ILink[];
+  image?: string;
 }
 
 interface IRace {
@@ -114,6 +115,7 @@ export const canididates: ICandidate[] = [
   {
     name: "Joe Biden",
     slug: "joe-biden",
+    image: "/candidates/joe-biden.webp",
     race: RacesByName.President,
     party: "Democrat",
     links: [
