@@ -46,11 +46,14 @@ export const CandidateSourcesTable = async ({
         };
       });
     }
-  } catch (error) {
+  } catch (error: any) {
     return (
       <Card>
         <CardHeader size={4}>Explore sources</CardHeader>
-        <CardContent>Error loading sources: {error.message} </CardContent>
+        <CardContent>
+          Error loading sources:
+          <br /> <code> {error?.message}</code>{" "}
+        </CardContent>
       </Card>
     );
   }

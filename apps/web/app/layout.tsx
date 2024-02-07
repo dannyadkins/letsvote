@@ -23,7 +23,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={classNames(GeistSans.variable, playfair.variable)}>
+      <body
+        className={classNames(
+          GeistSans.variable,
+          playfair.variable,
+          GeistMono.variable
+        )}
+      >
         {/* header */}
         <Header />
         {children}
