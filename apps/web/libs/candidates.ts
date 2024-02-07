@@ -74,7 +74,7 @@ interface ICandidate {
   race: IRace;
   party: "Democrat" | "Republican" | "Libertarian" | "Green" | "Independent";
   links: ILink[];
-  image?: string;
+  image: string;
 }
 
 interface IRace {
@@ -103,6 +103,14 @@ export enum ChunkTypes {
   UsefulInfo = "useful_information",
   Other = "other",
 }
+
+export const ChunkTypesToLabels = {
+  [ChunkTypes.DirectQuote]: "Direct Quote",
+  [ChunkTypes.Paraphrase]: "Paraphrase",
+  [ChunkTypes.Commentary]: "Commentary",
+  [ChunkTypes.UsefulInfo]: "Useful Information",
+  [ChunkTypes.Other]: "Other",
+};
 
 export const RacesByName: {
   [key: string]: IRace;
@@ -138,6 +146,7 @@ export const canididates: ICandidate[] = [
   {
     name: "Nikki Haley",
     slug: "nikki-haley",
+    image: "/candidates/nikki-haley.webp",
     race: RacesByName.President,
     party: "Republican",
     links: [

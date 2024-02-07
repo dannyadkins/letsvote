@@ -1,11 +1,16 @@
 "use client";
 
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
+import { ChunkTypes } from "@/libs/candidates";
 
 export default function SourcesTable({ sources }: { sources: any[] }) {
   return (
     <DataTable
       columns={[
+        {
+          accessorKey: "type",
+          header: "Type",
+        },
         {
           accessorKey: "content",
           header: "Quote",
@@ -19,7 +24,7 @@ export default function SourcesTable({ sources }: { sources: any[] }) {
         {
           accessorKey: "url",
           header: "URL",
-          cell: (props) => {
+          cell: (props: any) => {
             return (
               <a
                 href={props.getValue()}
@@ -38,6 +43,11 @@ export default function SourcesTable({ sources }: { sources: any[] }) {
         content: source.content,
         url: source?.url,
         title: source?.title,
+        type:
+          Object.keys(ChunkTypes).find(
+            (key: any) =>
+              ChunkTypes[key as keyof typeof ChunkTypes] === source.type
+          ) || source.type,
       }))}
     />
   );

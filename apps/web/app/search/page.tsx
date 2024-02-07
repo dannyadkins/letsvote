@@ -42,41 +42,35 @@ export default async function SearchPage({
   // related pages from sitemap
 
   return (
-    <div className="flex justify-center items-center ">
-      <div className="max-w-[700px] w-full">
-        <h3 className="">{searchQuery}</h3>
-        <ClientGeneration
-          useMarkdown={true}
-          messages={constructSearchPrompt(
-            searchQuery,
-            chunks,
-            "speak to a phd level student"
-          )}
-        />
+    <>
+      <h3 className="">{searchQuery}</h3>
+      <ClientGeneration
+        useMarkdown={true}
+        messages={constructSearchPrompt(
+          searchQuery,
+          chunks,
+          "speak to a phd level student"
+        )}
+      />
 
-        <div className="flex flex-col gap-2 items-center">
-          {chunks.map((chunk) => {
-            return (
-              <div key={chunk.id} className="bg-beige-50 w-full rounded-lg">
-                <div key={chunk.id} className="p-4">
-                  <p>{chunk.content}</p>
-                  <p className="text-sm italic">
-                    Source:{" "}
-                    <a
-                      href={chunk.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {chunk.title}
-                    </a>
-                  </p>
-                  <p>Relevance: {chunk.distance}</p>
-                </div>
+      <div className="flex flex-col gap-2 items-center">
+        {chunks.map((chunk) => {
+          return (
+            <div key={chunk.id} className="bg-beige-50 w-full rounded-lg">
+              <div key={chunk.id} className="p-4">
+                <p>{chunk.content}</p>
+                <p className="text-sm italic">
+                  Source:{" "}
+                  <a href={chunk.url} target="_blank" rel="noopener noreferrer">
+                    {chunk.title}
+                  </a>
+                </p>
+                <p>Relevance: {chunk.distance}</p>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </>
   );
 }

@@ -11,6 +11,12 @@ import prisma from "@/db";
 import { chunkKnn } from "@/libs/ai";
 import { ChunkTypes, canididates } from "@/libs/candidates";
 import Image from "next/image";
+import {
+  CandidateSourcesTable,
+  CandidateSourcesTableSkeleton,
+} from "./CandidateSourcesTable";
+import { Suspense } from "react";
+import { Skeleton } from "@/components/atoms/Skeleton";
 
 export default async function CandidatePage({
   params,
@@ -27,40 +33,6 @@ export default async function CandidatePage({
     throw new Error("Candidate not found");
   }
 
-  let quotes;
-  if (searchParams.softTextSearch) {
-    quotes = await chunkKnn(
-      { text: searchParams.softTextSearch as string },
-      25,
-      "Candidates"
-    );
-  } else {
-    quotes = await prisma.chunk.findMany({
-      where: {
-        topics: {
-          has: candidate.name + " 2024 Presidential Campaign",
-        },
-        type: ChunkTypes.DirectQuote,
-        ...(searchParams.filter && {
-          content: {
-            contains: searchParams.filter as string,
-          },
-        }),
-      },
-      take: 25,
-      include: {
-        Document: true,
-      },
-    });
-  }
-
-  quotes = quotes.map((chunk) => {
-    return {
-      ...(chunk.Document || {}),
-      ...chunk,
-    };
-  });
-
   return (
     <div className="py-4 px-8 flex flex-col gap-8">
       <div className="flex flex-row gap-8">
@@ -72,7 +44,7 @@ export default async function CandidatePage({
               alt={candidate.name}
               height={240}
               width={340}
-              layout="responsive"
+              layout="crop"
               className="rounded-lg"
             />
           </CardContent>
@@ -80,14 +52,16 @@ export default async function CandidatePage({
             {candidate.party && <Badge>{candidate.party}</Badge>}
           </CardFooter>
         </Card>
-        <Card>On the issues</Card>
+        <Card>
+          <CardHeader size={4}>On the issues</CardHeader>
+        </Card>
       </div>
-      <Card>
-        <CardHeader size={4}>Explore sources</CardHeader>
-        <CardContent>
-          <SourcesTable sources={quotes} />
-        </CardContent>
-      </Card>
+      <Suspense fallback={<CandidateSourcesTableSkeleton />}>
+        <CandidateSourcesTable
+          candidate={candidate}
+          searchParams={searchParams}
+        />
+      </Suspense>
     </div>
   );
 }

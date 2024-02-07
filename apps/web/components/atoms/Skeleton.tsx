@@ -12,7 +12,7 @@ function Skeleton({ className, count = 1, ...props }: SkeletonProps) {
         <div
           key={i}
           className={classNames(
-            "animate-pulse rounded-md bg-primary/10",
+            "animate-pulse rounded-md bg-beige-50",
             className
           )}
           {...props}

@@ -13,6 +13,7 @@ import { Button } from "@/components/atoms/Button";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/atoms/Checkbox";
+import { ChunkTypes, ChunkTypesToLabels } from "@/libs/candidates";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -22,8 +23,6 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
-  const priorities: any[] = [];
-  const statuses: any[] = [];
 
   const [tableFilterValue, setTableFilterValue] = useState("");
   const [debouncedValue, setDebouncedValue] = useState(tableFilterValue);
@@ -31,6 +30,12 @@ export function DataTableToolbar<TData>({
   const router = useRouter();
 
   const [useExactSearch, setUseExactSearch] = useState(true);
+
+  // TODO refactor source-specific logic out
+  const types: any[] = Object.entries(ChunkTypes).map((key, value) => ({
+    value: value,
+    label: ChunkTypesToLabels[key[1]],
+  }));
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -54,6 +59,7 @@ export function DataTableToolbar<TData>({
     window.history.pushState(null, "", `?${params.toString()}`);
     router.refresh();
   }, [debouncedValue, useExactSearch]);
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
@@ -77,18 +83,11 @@ export function DataTableToolbar<TData>({
             Search for exact text match
           </label>
         </div>
-        {table.getColumn("status") && (
+        {table.getColumn("type") && (
           <DataTableFacetedFilter
-            column={table.getColumn("status")}
-            title="Status"
-            options={statuses}
-          />
-        )}
-        {table.getColumn("priority") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("priority")}
-            title="Priority"
-            options={priorities}
+            column={table.getColumn("type")}
+            title="Type"
+            options={types}
           />
         )}
         {isFiltered && (

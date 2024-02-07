@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/Input";
-import { useState, KeyboardEvent } from "react";
+import { useState, KeyboardEvent, useRef } from "react";
+import Link from "next/link";
 
 const SUGGESTED_SEARCHES = [
   "What are Nikki Haley's views on foreign policy?",
@@ -13,9 +14,14 @@ export const SearchBar = ({ className, ...props }: any) => {
   const [inputValue, setInputValue] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const router = useRouter();
+  const suggestionsRef = useRef<any>(null);
 
   const handleFocus = () => setIsFocused(true);
-  const handleBlur = () => setIsFocused(false);
+  const handleBlur = (event: any) => {
+    if (!suggestionsRef.current.contains(event.relatedTarget)) {
+      setIsFocused(false);
+    }
+  };
   const handleChange = (event: any) => setInputValue(event.target.value);
 
   const handleSelectSuggestion = (suggestion: string) => {
@@ -39,15 +45,23 @@ export const SearchBar = ({ className, ...props }: any) => {
         onKeyDown={handleKeyDown}
       />
       {isFocused && !inputValue && (
-        <div className="w-[500px] max-w-full absolute mt-1 bg-beige-50 text-sm flex flex-col z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none">
+        <div
+          ref={suggestionsRef}
+          className="w-[500px] max-w-full absolute mt-1 bg-beige-50 text-sm flex flex-col z-50 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none"
+        >
           {SUGGESTED_SEARCHES.map((search) => (
-            <span
+            <Link
+              href={`/search?q=${encodeURIComponent(search)}`}
               key={search}
               className="hover:bg-neutral-100 p-2 rounded-md cursor-pointer"
-              onClick={() => handleSelectSuggestion(search)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSelectSuggestion(search);
+              }}
             >
-              {search}
-            </span>
+              <span key={search}>{search}</span>
+            </Link>
           ))}
         </div>
       )}
