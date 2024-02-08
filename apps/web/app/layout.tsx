@@ -30,6 +30,9 @@ export default function RootLayout({
           GeistMono.variable
         )}
       >
+        <span className="flex flex-col w-full bg-black text-white px-2 text-xs py-1">
+          NOTE: This is a demo and should not be used for any real use cases.
+        </span>
         {/* header */}
         <Header />
         {children}
