@@ -62,11 +62,11 @@ export function DataTableFacetedFilter<TData, TValue>({
         <Button variant="outline" size="sm" className="h-8 border-dashed">
           <PlusCircledIcon className="mr-2 h-4 w-4" />
           {title}
-          {[selectedValue]?.length > 0 && (
+          {selectedValue?.length && (
             <>
               <div className="hidden space-x-1 lg:flex">
                 {options
-                  .filter((option) => selectedValue === option.value)
+                  .filter((option) => selectedValue === option.label)
                   .map((option) => (
                     <Badge
                       variant="secondary"
