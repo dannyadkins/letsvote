@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     openaiClient = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "",
     });
-    model = "gpt-4-0125-preview"; // default model
+    model = "gpt-3.5-turbo-0125"; // default model
   }
 
   const response = await openaiClient.chat.completions.create({
