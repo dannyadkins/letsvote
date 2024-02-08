@@ -8,6 +8,7 @@ import {
   CarouselItem,
   CarouselNext,
 } from "@/components/atoms/Carousel";
+import { Skeleton } from "@/components/atoms/Skeleton";
 import Link from "next/link";
 
 export const SourcesCarousel = ({ chunks }: { chunks: any }) => {
@@ -37,5 +38,13 @@ export const SourcesCarousel = ({ chunks }: { chunks: any }) => {
       </CarouselContent>
       <CarouselNext />
     </Carousel>
+  );
+};
+
+export const SourcesCarouselSkeleton = () => {
+  return (
+    <div className="flex flex-row gap-4 p-3">
+      <Skeleton count={3} className="w-[33.3%] h-36 rounded-xl" />
+    </div>
   );
 };

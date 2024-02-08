@@ -16,6 +16,7 @@ interface IGenerationProps {
   useMarkdown?: boolean;
   socratic?: boolean;
   sources?: any[];
+  setIsLoading?: (isLoading: boolean) => void;
 }
 
 const randomId = () => {
@@ -53,6 +54,12 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
         }))
     ),
   });
+
+  useEffect(() => {
+    if (props.setIsLoading) {
+      props.setIsLoading(isLoading);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     const userMessage = initialMessages

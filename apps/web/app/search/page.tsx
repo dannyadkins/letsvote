@@ -1,16 +1,11 @@
 import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/atoms/Carousel";
+
 import { ClientGeneration } from "@/components/atoms/ClientGeneration";
 import { chunkKnn } from "@/libs/ai";
 import { constructSearchPrompt } from "@/libs/ai/prompts";
 import { Chunk } from "@prisma/client";
 import { SourcesCarousel } from "./SourcesCarousel";
+import { SearchQueryAnswer } from "./SearchQueryAnswer";
 
 export default async function SearchPage({
   params,
@@ -51,20 +46,9 @@ export default async function SearchPage({
   // related pages from sitemap
 
   return (
-    <div className="flex flex-col gap-4 w-full">
-      <h3 className="">{searchQuery}</h3>
-
+    <>
       <SourcesCarousel chunks={chunks} />
-      <Card>
-        <CardHeader size={4}>Answer</CardHeader>
-        <CardContent>
-          <ClientGeneration
-            useMarkdown={true}
-            sources={chunks}
-            messages={[{ role: "user", content: searchQuery }]}
-          />
-        </CardContent>
-      </Card>
-    </div>
+      <SearchQueryAnswer searchQuery={searchQuery} sources={chunks} />
+    </>
   );
 }
