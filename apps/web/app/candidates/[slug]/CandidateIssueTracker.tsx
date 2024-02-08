@@ -10,16 +10,16 @@ export const CandidateIssueTracker = async ({
   candidate: { name: string };
   issue: string;
 }) => {
-  let sources = await chunkKnn(
+  const sources = await chunkKnn(
     { text: candidate.name + " views on " + issue },
     30
   );
 
   //   filter out any duplicate sources
-  sources = sources.filter(
+  const deduplicatedSources = sources.filter(
     (source, index, self) =>
       index ===
-      self.findIndex((t) => t.url === source.url && t.title === source.title)
+      self.findIndex((t) => t.url === source.url || t.title === source.title)
   );
 
   return (
@@ -37,8 +37,8 @@ export const CandidateIssueTracker = async ({
           sources={sources}
           socratic={true}
         />
-        <div className="flex flex-row gap-2 items-center">
-          {sources.map(
+        <div className="flex flex-row gap-2 items-center overflow-x-scroll scrollbar-none p-2">
+          {deduplicatedSources.map(
             (source) =>
               source.content && (
                 <Link href={source.url} key={source.id} target="_blank">

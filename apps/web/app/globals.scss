@@ -58,3 +58,8 @@ h6 {
     @apply underline;
   }
 }
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
