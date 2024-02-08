@@ -23,7 +23,7 @@ export const CandidateIssueTracker = async ({
   );
 
   return (
-    <div className="max-h-full flex flex-col gap-2">
+    <div className="max-h-full flex flex-col">
       <span className="text-lg font-semibold">{issue}</span>
       <div className="text-sm line-clamp-2">
         {/* TODO change to cached server-side with search augmentation, based on cookie */}

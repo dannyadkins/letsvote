@@ -2,7 +2,7 @@
 import { Message } from "ai";
 import { useChat } from "ai/react";
 import classNames from "classnames";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import Markdown from "react-markdown";
 import { SocraticText } from "./SocraticText";
 import { useCookies } from "react-cookie";
@@ -26,19 +26,23 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
   const { messages: initialMessages, useMarkdown, socratic, sources } = props;
   const [cookies] = useCookies(["customInstructions", "selectedState"]);
 
-  const combinedPrompt = [
-    constructCustomInstructionsPrompt({
-      customInstructions: cookies.customInstructions || "",
-      selectedState: cookies.selectedState || "",
-    }),
-    constructSourcePrompt(sources),
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const combinedPrompt = useMemo(() => {
+    const prompts = [
+      constructCustomInstructionsPrompt({
+        customInstructions: cookies.customInstructions || "",
+        selectedState: cookies.selectedState || "",
+      }),
+      constructSourcePrompt(sources),
+    ].filter(Boolean);
 
-  const initialSystemMessage = combinedPrompt
-    ? [{ role: "system", content: combinedPrompt, id: randomId() }]
-    : [];
+    return prompts.join("\n");
+  }, [cookies.customInstructions, cookies.selectedState, sources]);
+
+  const initialSystemMessage = useMemo(() => {
+    return combinedPrompt
+      ? [{ role: "system", content: combinedPrompt, id: randomId() }]
+      : [];
+  }, [combinedPrompt]);
 
   const { messages, error, append, isLoading } = useChat({
     api: "/api/chat",
