@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { chunkKnn, embed } from "@/libs/ai";
-import { constructSourcePrompt } from "@/libs/ai/prompts";
+import { constructBasePrompt, constructSourcePrompt } from "@/libs/ai/prompts";
 
 let openaiClient;
 let model;
@@ -18,15 +18,24 @@ export async function POST(req: Request) {
       console.error(e);
     }
   }
+
+  const basePrompt = constructBasePrompt();
   const sourcePrompt = constructSourcePrompt(sources);
 
   if (sourcePrompt?.length) {
     // push to first
     messages.unshift({
       role: "system",
-      content: sourcePrompt,
+      content: basePrompt + "\n" + sourcePrompt,
+    });
+  } else {
+    messages.unshift({
+      role: "system",
+      content: basePrompt,
     });
   }
+
+  console.log("messages", messages);
 
   if (requestedModel === "pplx-70b-online") {
     openaiClient = new OpenAI({
