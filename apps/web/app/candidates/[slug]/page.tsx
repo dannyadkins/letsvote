@@ -14,7 +14,7 @@ import {
   CandidateSourcesTableSkeleton,
 } from "./CandidateSourcesTable";
 import { Suspense } from "react";
-import { ClientGeneration } from "@/components/atoms/ClientGeneration";
+import { CandidateIssueTracker } from "./CandidateIssueTracker";
 
 export default async function CandidatePage({
   params,
@@ -59,21 +59,7 @@ export default async function CandidatePage({
           <CardContent className="flex flex-col gap-2">
             {["Healthcare", "Economy", "Foreign Policy", "Climate Change"].map(
               (issue) => (
-                <div className="max-h-full ">
-                  <span className="text-lg font-semibold">{issue}</span>
-                  <div className="text-sm line-clamp-2">
-                    {/* TODO change to cached server-side with search augmentation, based on cookie */}
-                    <ClientGeneration
-                      messages={[
-                        {
-                          content: `In 30 words or fewer, what is ${candidate.name}'s stance on ${issue}?`,
-                          role: "user",
-                        },
-                      ]}
-                      socratic={true}
-                    />
-                  </div>
-                </div>
+                <CandidateIssueTracker issue={issue} candidate={candidate} />
               )
             )}
           </CardContent>

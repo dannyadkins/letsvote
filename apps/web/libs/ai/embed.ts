@@ -34,7 +34,9 @@ export const chunkKnn = async (
   k: number,
   topic: string = "Candidates"
 ): Promise<
-  (Partial<Chunk & Document> & {
+  (Partial<Chunk> & {
+    url: string;
+    title: string;
     distance: number;
     surroundingchunks?: Partial<Chunk>[];
   })[]

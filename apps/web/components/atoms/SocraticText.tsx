@@ -14,6 +14,7 @@ import {
   Pencil1Icon,
   FilePlusIcon,
 } from "@radix-ui/react-icons";
+import Markdown from "react-markdown";
 
 export const SocraticText = ({
   text,
@@ -35,7 +36,7 @@ export const SocraticText = ({
             className
           )}
         >
-          {text}
+          <Markdown>{text}</Markdown>
         </span>
       </PopoverTrigger>
       {/* TODO: add icons */}

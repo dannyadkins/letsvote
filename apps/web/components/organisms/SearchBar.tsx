@@ -8,8 +8,10 @@ import { ArrowUpIcon } from "@radix-ui/react-icons";
 import classNames from "classnames";
 
 const SUGGESTED_SEARCHES = [
+  "When can I vote in Hawaii?",
+  "How does the election process work in Georgia?",
   "What are Nikki Haley's views on foreign policy?",
-  "When can I vote in Iowa?",
+  "What are the top issues in the 2024 election?",
 ];
 
 export const SearchBar = ({ className, ...props }: any) => {

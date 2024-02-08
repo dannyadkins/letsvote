@@ -6,46 +6,38 @@ import React, { useCallback, useEffect } from "react";
 import Markdown from "react-markdown";
 import { SocraticText } from "./SocraticText";
 import { useCookies } from "react-cookie";
+import {
+  constructCustomInstructionsPrompt,
+  constructSourcePrompt,
+} from "@/libs/ai/prompts";
 
 interface IGenerationProps {
   messages: Pick<Message, "role" | "content">[];
   useMarkdown?: boolean;
   socratic?: boolean;
+  sources?: any[];
 }
 
 const randomId = () => {
   return Math.random().toString(36).substring(2, 15);
 };
 
-const deriveSystemPromptFromSettings = ({
-  customInstructions,
-  selectedState,
-}: {
-  customInstructions: string;
-  selectedState: string;
-}) => {
-  let prompt = "";
-  if (customInstructions) {
-    prompt += `You should respond to the user following these custom instructions, but make sure to be unbiased and informative: "${customInstructions}". You must still be factual, critical, unbiased, and nuanced, and cite all sources when applicable.\n`;
-  }
-  if (selectedState) {
-    if (prompt.length > 0) prompt += " ";
-    prompt += `You should try to focus on specific information relevant to a voter in ${selectedState}, but only if it is relevant.\n`;
-  }
-  return prompt;
-};
-
 export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
-  const { messages: initialMessages, useMarkdown, socratic } = props;
+  const { messages: initialMessages, useMarkdown, socratic, sources } = props;
   const [cookies] = useCookies(["customInstructions", "selectedState"]);
 
-  const systemPrompt = deriveSystemPromptFromSettings({
-    customInstructions: cookies.customInstructions || "",
-    selectedState: cookies.selectedState || "",
-  });
+  const combinedPrompt = [
+    constructCustomInstructionsPrompt({
+      customInstructions: cookies.customInstructions || "",
+      selectedState: cookies.selectedState || "",
+    }),
+    constructSourcePrompt(sources),
+  ]
+    .filter(Boolean)
+    .join("\n");
 
-  const initialSystemMessage = systemPrompt
-    ? [{ role: "system", content: systemPrompt, id: randomId() }]
+  const initialSystemMessage = combinedPrompt
+    ? [{ role: "system", content: combinedPrompt, id: randomId() }]
     : [];
 
   const { messages, error, append, isLoading } = useChat({
