@@ -1,14 +1,11 @@
-import { Card, CardContent, CardHeader } from "@/components/atoms/Card";
+export const dynamic = "force-dynamic";
 
-import { ClientGeneration } from "@/components/atoms/ClientGeneration";
 import { chunkKnn } from "@/libs/ai";
-import { constructSearchPrompt } from "@/libs/ai/prompts";
 import { Chunk } from "@prisma/client";
 import { SourcesCarousel } from "./SourcesCarousel";
 import { SearchQueryAnswer } from "./SearchQueryAnswer";
 
 export default async function SearchPage({
-  params,
   searchParams,
 }: {
   params: { slug: string };
