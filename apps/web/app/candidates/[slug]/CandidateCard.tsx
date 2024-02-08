@@ -10,7 +10,7 @@ import Image from "next/image";
 export const CandidateCard = ({ candidate }: { candidate: any }) => {
   return (
     <Card className="w-auto pt-4">
-      <CardContent className="flex flex-col gap-4 justify-between">
+      <CardContent className="flex flex-col gap-4 justify-between items-center sm:items-start">
         <h4>{candidate.name}</h4>
         <Image
           src={candidate.image}

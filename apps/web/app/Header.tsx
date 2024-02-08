@@ -48,7 +48,7 @@ export function Header() {
 
   return (
     <div className={navbarClasses.join(" ")}>
-      <div className="flex items-center justify-between max-w-full mx-auto px-4 py-2 sm:px-6 lg:px-4">
+      <div className="flex items-center justify-between max-w-full mx-auto px-4 py-4 sm:px-6">
         <div className="flex items-center">
           <Link href="/">
             <MotionDivWrapper
@@ -74,49 +74,6 @@ export function Header() {
             ))}
           </div>
           <ConfigurationModal />
-        </div>
-        <div className="-mr-2 flex md:hidden">
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="bg-beige-50 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
-            aria-controls="mobile-menu"
-            aria-expanded="false"
-          >
-            <span className="sr-only">Open main menu</span>
-            {/* Heroicon name: outline/menu */}
-            <svg
-              className="block h-6 w-6"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="#000000"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-            {/* Heroicon name: outline/x */}
-            <svg
-              className="hidden h-6 w-6"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="#000000"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
         </div>
       </div>
     </div>

@@ -73,7 +73,7 @@ export default function Home() {
               Information about candidates from the Presidential election down
               to your own local elections.{" "}
             </p>
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               {canididates.map((candidate) => (
                 <MotionDivWrapper
                   whileHover={{
