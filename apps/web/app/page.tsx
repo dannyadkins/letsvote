@@ -28,7 +28,7 @@ export default function Home() {
           />
         </MotionDivWrapper>
       </div>
-      <div className="w-full flex flex-col items-center justify-center h-[50vh] gap-4">
+      <div className="w-full flex flex-col items-center justify-center h-[50vh] gap-8">
         <MotionDivWrapper
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
