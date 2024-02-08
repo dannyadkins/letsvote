@@ -123,7 +123,7 @@ export const canididates: ICandidate[] = [
   {
     name: "Joe Biden",
     slug: "joe-biden",
-    image: "/candidates/joe-biden.webp",
+    image: "/candidates/joe-biden.png",
     race: RacesByName.President,
     party: "Democrat",
     links: [
@@ -146,7 +146,7 @@ export const canididates: ICandidate[] = [
   {
     name: "Nikki Haley",
     slug: "nikki-haley",
-    image: "/candidates/nikki-haley.webp",
+    image: "/candidates/nikki-haley.png",
     race: RacesByName.President,
     party: "Republican",
     links: [
@@ -167,10 +167,18 @@ export const canididates: ICandidate[] = [
     ],
   },
   {
-    name: "Robert F. Kennedy Jr.",
+    name: "RFK Jr.",
     slug: "rfk-jr",
-    image: "/candidates/nikki-haley.webp",
+    image: "/candidates/rfk-jr.png",
     party: "Independent",
+    race: RacesByName.President,
+    links: [],
+  },
+  {
+    name: "Dean Phillips",
+    slug: "dean-phillips",
+    image: "/candidates/dean-phillips.png",
+    party: "Democrat",
     race: RacesByName.President,
     links: [],
   },

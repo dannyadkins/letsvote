@@ -5,6 +5,8 @@ import { SearchBar } from "../components/organisms/SearchBar";
 import { ArrowLink } from "@/components/atoms/ArrowLink";
 import { canididates } from "@/libs/const";
 import { Card, CardContent } from "@/components/atoms/Card";
+import { CandidateCard } from "./candidates/[slug]/CandidateCard";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -50,25 +52,48 @@ export default function Home() {
       <Card className="w-full p-8 flex flex-col items-center min-h-[800px] ">
         <p className="caption">AGGREGATED FROM</p>
 
-        <div className="flex flex-col w-full items-start">
-          <div>
+        <div className="flex flex-col w-full items-start gap-12">
+          <div className="flex flex-col gap-6">
+            <h2> Ask questions </h2>
+            <p className="max-w-[700px]">
+              Access to cited sources and personalizable information about
+              elections and your candidates.{" "}
+            </p>
+          </div>
+          {/* <div>
             <ArrowLink href="/races">
               <h2> Explore races </h2>
             </ArrowLink>
-            Lalalala
-          </div>
-          <div>
+            {canididates.map()}
+          </div> */}
+          <div className="flex flex-col gap-6">
             <h2> Learn about candidates </h2>
-            {canididates.map((candidate) => (
-              <ArrowLink
-                key={candidate.name}
-                href={`/candidates/${candidate.slug}`}
-              >
-                {candidate.name}
-              </ArrowLink>
-            ))}
+            <p className="max-w-[700px]">
+              {" "}
+              Information about candidates from the Presidential election down
+              to your own local elections.{" "}
+            </p>
+            <div className="flex flex-row gap-4">
+              {canididates.map((candidate) => (
+                <MotionDivWrapper
+                  whileHover={{
+                    scale: 1.05,
+                    y: -10,
+                    boxShadow: "0px 10px 15px rgba(0,0,0,0.1)",
+                  }}
+                  whileTap={{ scale: 0.95, y: 0 }}
+                  className="cursor-pointer"
+                >
+                  <Link
+                    href={`/candidates/${candidate.slug}`}
+                    key={candidate.slug}
+                  >
+                    <CandidateCard candidate={candidate} />
+                  </Link>
+                </MotionDivWrapper>
+              ))}
+            </div>
           </div>
-          <h2> Ask questions </h2>
         </div>
       </Card>
     </main>

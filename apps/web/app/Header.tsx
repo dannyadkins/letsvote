@@ -12,15 +12,15 @@ export function Header() {
   const links = [
     {
       name: "Candidates",
-      href: "/candidates",
+      href: "/under-construction",
     },
     {
       name: "Races",
-      href: "/races",
+      href: "/under-construction",
     },
     {
       name: "Voting",
-      href: "/voting",
+      href: "/under-construction",
     },
   ];
 

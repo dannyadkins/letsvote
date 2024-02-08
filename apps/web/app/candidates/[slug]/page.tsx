@@ -18,6 +18,7 @@ import {
   CandidateIssueTracker,
   CandidateIssueTrackerSkeleton,
 } from "./CandidateIssueTracker";
+import { CandidateCard } from "./CandidateCard";
 
 export default async function CandidatePage({
   params,
@@ -37,26 +38,7 @@ export default async function CandidatePage({
   return (
     <div className="py-4 px-8 flex flex-col gap-8 items-center">
       <div className="flex sm:flex-row sm:justify-between flex-col items-center sm:items-start gap-8 w-full">
-        <Card className="w-[360px]">
-          <CardHeader>{candidate.name}</CardHeader>
-          <CardContent className="h-[300px] px-6">
-            <div className="w-full relative h-full rounded-xl">
-              <Image
-                src={candidate.image}
-                alt={candidate.name}
-                fill
-                style={{
-                  objectFit: "contain",
-                  borderRadius: "8px",
-                }}
-                className="rounded-lg"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            {candidate.party && <Badge>{candidate.party}</Badge>}
-          </CardFooter>
-        </Card>
+        <CandidateCard candidate={candidate} />
         <Card className="max-h-full sm:w-[66%] w-full">
           <CardHeader size={4}>On the issues</CardHeader>
           <CardContent className="flex flex-col gap-2">
