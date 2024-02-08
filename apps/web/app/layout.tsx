@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { Header } from "@/app/Header";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Let's Vote",
@@ -36,6 +37,7 @@ export default function RootLayout({
         {/* header */}
         <Header />
         {children}
+        <Analytics />
       </body>
     </html>
   );
