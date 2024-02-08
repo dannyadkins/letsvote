@@ -70,6 +70,7 @@ export default async function CandidatePage({
                           role: "user",
                         },
                       ]}
+                      socratic={true}
                     />
                   </div>
                 </div>

@@ -1,12 +1,15 @@
 "use client";
 import { Message } from "ai";
 import { useChat } from "ai/react";
+import classNames from "classnames";
 import React, { useCallback, useEffect } from "react";
 import Markdown from "react-markdown";
+import { SocraticText } from "./SocraticText";
 
 interface IGenerationProps {
   messages: Pick<Message, "role" | "content">[];
   useMarkdown?: boolean;
+  socratic?: boolean;
 }
 
 const randomId = () => {
@@ -14,10 +17,9 @@ const randomId = () => {
 };
 
 export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
-  const { messages: initialMessages, useMarkdown } = props;
+  const { messages: initialMessages, useMarkdown, socratic } = props;
 
-  console.log("messages: ", initialMessages);
-  const { messages, error, append } = useChat({
+  const { messages, error, append, isLoading } = useChat({
     api: "/api/chat",
     initialMessages: initialMessages
       .filter((m) => m.role !== "user")
@@ -60,12 +62,22 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
               ))}
         </>
       ) : (
-        <div>
+        <>
           {messages &&
             messages
               .filter((m) => m.role === "assistant")
-              .map((m) => <div key={m.id}>{m.content}</div>)}
-        </div>
+              .map((m) =>
+                socratic ? (
+                  <SocraticText
+                    disabled={isLoading}
+                    key={m.id}
+                    text={m.content}
+                  />
+                ) : (
+                  <span>{m.content}</span>
+                )
+              )}
+        </>
       )}
     </>
   );
