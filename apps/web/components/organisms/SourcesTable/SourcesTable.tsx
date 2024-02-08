@@ -1,5 +1,6 @@
 "use client";
 
+import { SocraticText } from "@/components/atoms/SocraticText";
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
 import { ChunkTypes } from "@/libs/const";
 
@@ -15,6 +16,9 @@ export default function SourcesTable({ sources }: { sources: any[] }) {
           accessorKey: "content",
           header: "Quote",
           minSize: 600,
+          cell: (props: any) => {
+            return <SocraticText text={props.getValue()} />;
+          },
         },
         {
           accessorKey: "title",

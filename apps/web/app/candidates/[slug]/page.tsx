@@ -14,7 +14,10 @@ import {
   CandidateSourcesTableSkeleton,
 } from "./CandidateSourcesTable";
 import { Suspense } from "react";
-import { CandidateIssueTracker } from "./CandidateIssueTracker";
+import {
+  CandidateIssueTracker,
+  CandidateIssueTrackerSkeleton,
+} from "./CandidateIssueTracker";
 
 export default async function CandidatePage({
   params,
@@ -59,7 +62,12 @@ export default async function CandidatePage({
           <CardContent className="flex flex-col gap-2">
             {["Healthcare", "Economy", "Foreign Policy", "Climate Change"].map(
               (issue) => (
-                <CandidateIssueTracker issue={issue} candidate={candidate} />
+                <Suspense
+                  key={issue}
+                  fallback={<CandidateIssueTrackerSkeleton issue={issue} />}
+                >
+                  <CandidateIssueTracker issue={issue} candidate={candidate} />
+                </Suspense>
               )
             )}
           </CardContent>

@@ -62,10 +62,10 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
         id: randomId(),
       }))[0];
     if (userMessage) {
-      console.log("Sending message: ", userMessage);
+      console.log("Sending message: ", userMessage.content);
       append(userMessage);
     }
-  }, [initialMessages, append]);
+  }, [append]);
 
   return (
     <>

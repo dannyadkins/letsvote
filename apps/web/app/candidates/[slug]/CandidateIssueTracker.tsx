@@ -1,4 +1,5 @@
 import { ClientGeneration } from "@/components/atoms/ClientGeneration";
+import { Skeleton } from "@/components/atoms/Skeleton";
 import { chunkKnn } from "@/libs/ai";
 import { Link1Icon } from "@radix-ui/react-icons";
 import Link from "next/link";
@@ -51,6 +52,15 @@ export const CandidateIssueTracker = async ({
           )}
         </div>
       </div>
+    </div>
+  );
+};
+
+export const CandidateIssueTrackerSkeleton = ({ issue }: { issue: string }) => {
+  return (
+    <div className="max-h-full flex flex-col">
+      <span className="text-lg font-semibold">{issue}</span>
+      <Skeleton className="h-12 w-full" />
     </div>
   );
 };

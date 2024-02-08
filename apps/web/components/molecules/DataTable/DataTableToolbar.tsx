@@ -56,9 +56,10 @@ export function DataTableToolbar<TData>({
       params.set("softTextSearch", debouncedValue);
       params.delete("filter");
     }
-    window.history.pushState(null, "", `?${params.toString()}`);
+    const newUrl = `?${params.toString()}`;
+    router.push(newUrl, { scroll: false });
     router.refresh();
-  }, [debouncedValue, useExactSearch]);
+  }, [debouncedValue, useExactSearch, router]);
 
   return (
     <div className="flex items-center justify-between">
