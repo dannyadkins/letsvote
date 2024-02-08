@@ -26,7 +26,7 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
   const { messages: initialMessages, useMarkdown, socratic, sources } = props;
   const [cookies] = useCookies(["customInstructions", "selectedState"]);
 
-  const combinedPrompt = useMemo(() => {
+  const initialSystemMessage = useMemo(() => {
     const prompts = [
       constructCustomInstructionsPrompt({
         customInstructions: cookies.customInstructions || "",
@@ -35,14 +35,11 @@ export const ClientGeneration: React.FC<IGenerationProps> = (props) => {
       constructSourcePrompt(sources),
     ].filter(Boolean);
 
-    return prompts.join("\n");
-  }, [cookies.customInstructions, cookies.selectedState, sources]);
-
-  const initialSystemMessage = useMemo(() => {
+    const combinedPrompt = prompts.join("\n");
     return combinedPrompt
       ? [{ role: "system", content: combinedPrompt, id: randomId() }]
       : [];
-  }, [combinedPrompt]);
+  }, [cookies.customInstructions, cookies.selectedState, sources]);
 
   const { messages, error, append, isLoading } = useChat({
     api: "/api/chat",
