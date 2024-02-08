@@ -1,14 +1,8 @@
 import { Message } from "ai";
 
-export const constructSearchPrompt = (
-  searchQuery: string,
-  sources?: {
-    content?: string;
-    url?: string;
-    title?: string;
-  }[],
-  customInstructions?: string
-): Pick<Message, "content" | "role">[] => {
+export const constructSourcePrompt = (
+  sources?: { content?: string; url?: string; title?: string }[]
+): string => {
   let sourcePrompt = "";
   (sources || []).forEach((source) => {
     sourcePrompt += `\nTitle: ${source.title} URL: ${source.url} Content: ${source.content}`;
@@ -20,6 +14,19 @@ export const constructSearchPrompt = (
       sourcePrompt +
       "\n\nUse any sources extremely judiciously ONLY if they are relevant, and cite all pieces of your response if possible. You MUST cite sources by using markdown links, such as [here is some link](https://someurl.com).";
   }
+  return sourcePrompt;
+};
+
+export const constructSearchPrompt = (
+  searchQuery: string,
+  sources?: {
+    content?: string;
+    url?: string;
+    title?: string;
+  }[],
+  customInstructions?: string
+): Pick<Message, "content" | "role">[] => {
+  let sourcePrompt = constructSourcePrompt(sources);
 
   return [
     {

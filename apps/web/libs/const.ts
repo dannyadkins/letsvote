@@ -1,4 +1,4 @@
-enum States {
+export enum States {
   Alabama = "Alabama",
   Alaska = "Alaska",
   Arizona = "Arizona",

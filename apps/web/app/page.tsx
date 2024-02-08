@@ -3,7 +3,7 @@ import { Input } from "@/components/atoms/Input";
 import Image from "next/image";
 import { SearchBar } from "../components/organisms/SearchBar";
 import { ArrowLink } from "@/components/atoms/ArrowLink";
-import { canididates } from "@/libs/candidates";
+import { canididates } from "@/libs/const";
 import { Card, CardContent } from "@/components/atoms/Card";
 
 export default function Home() {

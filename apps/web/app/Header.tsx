@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-import { Castle } from "lucide-react";
+import { GearIcon, GlobeIcon } from "@radix-ui/react-icons";
+import { ConfigurationModal } from "@/components/organisms/ConfigurationModal/ConfigurationModal";
+import { MotionDivWrapper } from "@/components/core/ClientMotion";
 export function Header() {
   // a sticky header that turns into white bg when you scroll down, has high z index, has a logo, and has a list of links that collapse
 
@@ -49,12 +51,17 @@ export function Header() {
       <div className="flex items-center justify-between max-w-full mx-auto px-4 py-2 sm:px-6 lg:px-4">
         <div className="flex items-center">
           <Link href="/">
-            <div className="flex-shrink-0">
-              <Castle />
-            </div>
+            <MotionDivWrapper
+              className="flex-shrink-0"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
+              <GlobeIcon className="hover:animate-spin" />
+            </MotionDivWrapper>
           </Link>
         </div>
-        <div className="hidden md:flex justify-end">
+        <div className="hidden md:flex justify-end items-center">
           <div className="ml-10 flex items-baseline space-x-4">
             {links.map((link) => (
               <a
@@ -66,6 +73,7 @@ export function Header() {
               </a>
             ))}
           </div>
+          <ConfigurationModal />
         </div>
         <div className="-mr-2 flex md:hidden">
           {/* Mobile menu button */}

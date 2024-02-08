@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/atoms/Skeleton";
 import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
 import prisma from "@/db";
 import { chunkKnn } from "@/libs/ai";
-import { ChunkTypes } from "@/libs/candidates";
+import { ChunkTypes } from "@/libs/const";
 
 export const CandidateSourcesTable = async ({
   candidate,
@@ -60,7 +60,7 @@ export const CandidateSourcesTable = async ({
   }
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader size={4}>Explore sources</CardHeader>
       <CardContent>
         <SourcesTable sources={quotes} />
@@ -71,7 +71,7 @@ export const CandidateSourcesTable = async ({
 
 export const CandidateSourcesTableSkeleton = () => {
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader size={4}>Explore sources</CardHeader>
       <div className="flex flex-col gap-2 p-8 mt-4">
         <Skeleton count={12} className="rounded-lg h-[80px]" />

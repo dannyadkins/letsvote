@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/atoms/Card";
-import { canididates } from "@/libs/candidates";
+import { canididates } from "@/libs/const";
 import Image from "next/image";
 import {
   CandidateSourcesTable,
@@ -33,7 +33,7 @@ export default async function CandidatePage({
 
   return (
     <div className="py-4 px-8 flex flex-col gap-8 items-center">
-      <div className="flex sm:flex-row sm:justify-between flex-col items-center sm:items-start gap-8">
+      <div className="flex sm:flex-row sm:justify-between flex-col items-center sm:items-start gap-8 w-full">
         <Card className="w-[360px]">
           <CardHeader>{candidate.name}</CardHeader>
           <CardContent className="h-[300px] px-6">
@@ -54,7 +54,7 @@ export default async function CandidatePage({
             {candidate.party && <Badge>{candidate.party}</Badge>}
           </CardFooter>
         </Card>
-        <Card className="flex-grow max-h-full sm:max-w-[66%] max-w-full">
+        <Card className="max-h-full sm:w-[66%] w-full">
           <CardHeader size={4}>On the issues</CardHeader>
           <CardContent className="flex flex-col gap-2">
             {["Healthcare", "Economy", "Foreign Policy", "Climate Change"].map(

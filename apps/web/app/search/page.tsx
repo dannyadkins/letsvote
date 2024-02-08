@@ -60,11 +60,7 @@ export default async function SearchPage({
         <CardContent>
           <ClientGeneration
             useMarkdown={true}
-            messages={constructSearchPrompt(
-              searchQuery,
-              chunks,
-              "speak to a phd level student"
-            )}
+            messages={constructSearchPrompt(searchQuery, chunks)}
           />
         </CardContent>
       </Card>

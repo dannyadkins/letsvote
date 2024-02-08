@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/molecules/DataTable/DataTable";
-import { ChunkTypes } from "@/libs/candidates";
+import { ChunkTypes } from "@/libs/const";
 
 export default function SourcesTable({ sources }: { sources: any[] }) {
   return (

@@ -13,7 +13,7 @@ import { Button } from "@/components/atoms/Button";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Checkbox } from "@/components/atoms/Checkbox";
-import { ChunkTypes, ChunkTypesToLabels } from "@/libs/candidates";
+import { ChunkTypes, ChunkTypesToLabels } from "@/libs/const";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;

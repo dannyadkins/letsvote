@@ -8,7 +8,12 @@ import { Button } from "./Button";
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
 import { useState } from "react";
 import { ClientGeneration } from "./ClientGeneration";
-import { MagicWandIcon } from "@radix-ui/react-icons";
+import {
+  MagicWandIcon,
+  QuestionMarkIcon,
+  Pencil1Icon,
+  FilePlusIcon,
+} from "@radix-ui/react-icons";
 
 export const SocraticText = ({
   text,
@@ -26,7 +31,7 @@ export const SocraticText = ({
       <PopoverTrigger asChild>
         <span
           className={classNames(
-            "hover:bg-neutral-50 transition-all duration-200 cursor-pointer text-left",
+            "hover:bg-neutral-50 transition-all duration-200 cursor-pointer text-left p-2 rounded-md",
             className
           )}
         >
@@ -47,16 +52,16 @@ export const SocraticText = ({
           {mode === "none" && (
             <>
               <span
-                className="w-full rounded-md bg-beige-50 hover:bg-neutral-100 transition-all duration-200 p-2 text-sm cursor-pointer"
+                className="w-full flex flex-row gap-2 items-center rounded-md bg-beige-50 hover:bg-neutral-50 transition-all duration-200 p-2 text-sm cursor-pointer"
                 onClick={() => setMode("nuance")}
               >
-                Add nuance
+                <FilePlusIcon className="h-4 w-4" /> Add nuance
               </span>
               <span
-                className="w-full rounded-md bg-beige-50 hover:bg-neutral-100 transition-all duration-200 p-2 text-sm cursor-pointer"
+                className="w-full flex flex-row gap-2 items-center rounded-md bg-beige-50 hover:bg-neutral-50 transition-all duration-200 p-2 text-sm cursor-pointer"
                 onClick={() => setMode("critique")}
               >
-                Critique
+                <Pencil1Icon className="h-4 w-4" /> Critique
               </span>
             </>
           )}
