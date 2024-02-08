@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/atoms/Skeleton";
 import SourcesTable from "@/components/organisms/SourcesTable/SourcesTable";
 import prisma from "@/db";
 import { chunkKnn } from "@/libs/ai";
-import { ChunkTypes } from "@/libs/const";
+import { ChunkTypes, ChunkTypesToLabels } from "@/libs/const";
 
 export const CandidateSourcesTable = async ({
   candidate,
@@ -13,6 +13,14 @@ export const CandidateSourcesTable = async ({
   searchParams: any;
 }) => {
   let quotes = [];
+
+  console.log("Searchparams.type", searchParams.type);
+  console.log("keyof ChunkTypes", Object.keys(ChunkTypes));
+
+  const type = Object.keys(ChunkTypesToLabels).find(
+    // @ts-ignore
+    (key) => ChunkTypesToLabels[key] === searchParams.type
+  );
 
   try {
     if (searchParams.softTextSearch) {
@@ -27,8 +35,8 @@ export const CandidateSourcesTable = async ({
           topics: {
             has: candidate.name + " 2024 Presidential Campaign",
           },
-          type: searchParams.type as ChunkTypes,
-          ...(searchParams.filter && {
+          type: !!type ? type : undefined,
+          ...(searchParams.filter?.length && {
             content: {
               contains: searchParams.filter as string,
             },
