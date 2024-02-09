@@ -33,7 +33,6 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="h-[80px]"
         >
           <h1>Let's Vote.</h1>
           {/* TODO, give an example of a search if they don't do anything with typing animation */}
@@ -50,7 +49,7 @@ export default function Home() {
         <SearchBar />
       </div>
       <Card className="w-full p-8 flex flex-col items-center min-h-[800px] ">
-        <p className="caption">AGGREGATED FROM</p>
+        {/* <p className="caption">AGGREGATED FROM</p> */}
 
         <div className="flex flex-col w-full items-start gap-12">
           <div className="flex flex-col gap-6">
