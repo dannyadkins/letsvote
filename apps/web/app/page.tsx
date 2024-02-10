@@ -37,7 +37,7 @@ export default function Home() {
           <h1>Let's Vote.</h1>
           {/* TODO, give an example of a search if they don't do anything with typing animation */}
         </MotionDivWrapper>
-        {/* <MotionDivWrapper
+        <MotionDivWrapper
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1 }}
@@ -46,7 +46,7 @@ export default function Home() {
             Learn about how you can vote and what the candidates are saying.
           </p>
         </MotionDivWrapper>
-        <SearchBar /> */}
+        <SearchBar />
       </div>
       <Card className="w-full p-8 flex flex-col items-center min-h-[800px] ">
         {/* <p className="caption">AGGREGATED FROM</p> */}
