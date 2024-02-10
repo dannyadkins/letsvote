@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/atoms/Input";
-import { useState, KeyboardEvent, useRef } from "react";
+import { useState, KeyboardEvent, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ArrowUpIcon } from "@radix-ui/react-icons";
 import classNames from "classnames";
@@ -58,6 +58,7 @@ export const SearchBar = ({ className, ...props }: any) => {
               href={`/search?q=${encodeURIComponent(search)}`}
               key={search}
               className="hover:bg-neutral-100 p-2 rounded-md cursor-pointer"
+              onTouchEnd={() => handleSelectSuggestion(search)} // Changed to onTouchEnd for better mobile support
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
